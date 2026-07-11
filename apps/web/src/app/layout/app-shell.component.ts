@@ -17,6 +17,17 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
           <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
             <span aria-hidden="true">⌂</span> Home
           </a>
+          <a routerLink="/query" routerLinkActive="active">
+            <span aria-hidden="true">◌</span> Query
+          </a>
+          <a routerLink="/results" routerLinkActive="active">
+            <span aria-hidden="true">◫</span> Results
+          </a>
+          <a routerLink="/library" routerLinkActive="active">
+            <span aria-hidden="true">▱</span> Library
+          </a>
+
+          <hr class="nav-divider" />
 
           <a routerLink="/secure-ask" routerLinkActive="active">
             <span aria-hidden="true">◇</span> Secure Ask

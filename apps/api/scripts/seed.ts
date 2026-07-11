@@ -58,12 +58,28 @@ async function seedTascoDemoData(client: PoolClient): Promise<Record<string, num
     )
   }
 
+  for (const department of data.departments) {
+    await client.query(
+      `
+        INSERT INTO tasco_departments (tenant_id, id, name_en, name_vi, metadata)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (tenant_id, id) DO UPDATE SET
+          name_en = EXCLUDED.name_en,
+          name_vi = EXCLUDED.name_vi,
+          metadata = EXCLUDED.metadata,
+          updated_at = now()
+      `,
+      [tenantId, department.id, department.en, department.vi, { source: 'canonical_department_catalog' }]
+    )
+  }
+
   for (const user of data.users) {
     await client.query(
       `
-        INSERT INTO tasco_users (id, full_name, department_id, role, subsidiary_id, metadata)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO tasco_users (id, tenant_id, full_name, department_id, role, subsidiary_id, metadata)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (id) DO UPDATE SET
+          tenant_id = EXCLUDED.tenant_id,
           full_name = EXCLUDED.full_name,
           department_id = EXCLUDED.department_id,
           role = EXCLUDED.role,
@@ -71,7 +87,7 @@ async function seedTascoDemoData(client: PoolClient): Promise<Record<string, num
           metadata = EXCLUDED.metadata,
           updated_at = now()
       `,
-      [user.id, user.name, deptId(user.department), user.role, user.subsidiaryId, { source: 'Users sheet canonical identity' }]
+      [user.id, tenantId, user.name, deptId(user.department), user.role, user.subsidiaryId, { source: 'Users sheet canonical identity' }]
     )
   }
 
@@ -118,6 +134,7 @@ async function seedTascoDemoData(client: PoolClient): Promise<Record<string, num
       chunks: await countRows(client, 'knowledge_chunks'),
       kgNodes: await countRows(client, 'kg_nodes'),
       kgEdges: await countRows(client, 'kg_edges'),
+      departments: await countRows(client, 'tasco_departments'),
       users: data.users.length,
       subsidiaries: data.subsidiaries.length,
       permissionCases: data.permissionCases.length,
@@ -476,7 +493,7 @@ async function upsertKgEdge(client: PoolClient, input: KgEdgeInput): Promise<voi
   )
 }
 
-async function countRows(client: PoolClient, tableName: 'knowledge_chunks' | 'kg_nodes' | 'kg_edges'): Promise<number> {
+async function countRows(client: PoolClient, tableName: 'knowledge_chunks' | 'kg_nodes' | 'kg_edges' | 'tasco_departments'): Promise<number> {
   const result = await client.query<{ count: string }>(`SELECT count(*) FROM ${tableName} WHERE tenant_id = $1`, [tenantId])
   return Number(result.rows[0]?.count ?? 0)
 }

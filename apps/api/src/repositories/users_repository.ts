@@ -4,6 +4,7 @@ import type { Principal } from './secure_types.js'
 
 interface UserRow {
   id: string
+  tenant_id: string
   full_name: string
   department_id: string
   role: TascoUser['role']
@@ -24,8 +25,9 @@ export default class UsersRepository {
   public async list(): Promise<TascoUser[]> {
     const result = await query<UserRow>(
       `
-        SELECT id, full_name, department_id, role, subsidiary_id
+        SELECT id, tenant_id, full_name, department_id, role, subsidiary_id
         FROM tasco_users
+        WHERE tenant_id = 'tasco-demo'
         ORDER BY id
       `
     )
@@ -35,9 +37,9 @@ export default class UsersRepository {
   public async findPrincipal(userId: string): Promise<Principal | null> {
     const result = await query<UserRow>(
       `
-        SELECT id, full_name, department_id, role, subsidiary_id
+        SELECT id, tenant_id, full_name, department_id, role, subsidiary_id
         FROM tasco_users
-        WHERE id = $1
+        WHERE tenant_id = 'tasco-demo' AND id = $1
         LIMIT 1
       `,
       [userId]
@@ -49,7 +51,7 @@ export default class UsersRepository {
       role: row.role,
       departmentId: deptId(row.department_id),
       subsidiaryId: row.subsidiary_id,
-      tenantId: 'tasco-demo',
+      tenantId: row.tenant_id,
     }
   }
 }

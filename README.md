@@ -2,22 +2,23 @@
 
 A minimal enterprise-knowledge proof of concept built from the Hackathon Framework. It keeps the generic document workflow available as an API compatibility layer while centering the product experience on permission-aware retrieval, policy evidence, and evaluation.
 
-## Product navigation
+## Customization boundary
 
-The primary navigation exposes only the enterprise-knowledge workflow:
+The primary navigation keeps the framework's Home, Query, Results, and Library links. A divider marks where the enterprise-knowledge workflow begins:
 
 - **Home** summarizes the live corpus, identity boundaries, policy coverage, runtime profile, and latest evaluation evidence.
 - **Secure Ask** runs the same-question/different-permission demo against server-resolved identities.
 - **Access Rules** replays the deny-by-default classification and subsidiary policy against live database rows.
 - **Evaluation** runs and persists the permission, context-isolation, and citation-integrity gates.
 
-The inherited Query, Results, and Learning Library routes are not part of the PoC navigation. Their generic API behavior remains available for architectural compatibility, while `/api/v1/workspace/*` owns the permission-aware knowledge workflow.
+The generic framework behavior remains available, while `/api/v1/workspace/*` owns the permission-aware knowledge workflow.
 
 ## Included
 
-- Angular 21 standalone frontend with a focused left navigation: Home, Secure Ask, Access Rules, and Evaluation
+- Angular 21 standalone frontend with framework and enterprise-knowledge navigation separated by a divider
 - Knowledge-specific Home widgets backed by the live enterprise corpus and evaluation state
-- Generic Query, Results, and Library capabilities retained only as framework compatibility surfaces
+- Tenant-scoped department directory with database-enforced user-to-department membership
+- Query, Results, and Library workflows retained from the reusable framework
 - Express API packaged as a Vercel Function under `/api`
 - PostgreSQL migrations with workspace scoping, full-text search, `vector(1024)`, and HNSW indexing
 - Dependency-free feature-hash embeddings, so retrieval works before an external embedding provider is added

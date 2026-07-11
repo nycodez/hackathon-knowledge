@@ -1,14 +1,15 @@
 import { once } from 'node:events'
 import type { AddressInfo } from 'node:net'
-import type {
-  ApiEnvelope,
-  TascoAskResponse,
-  TascoDocumentDetailResponse,
-  TascoEvalCaseResult,
-  TascoEvalReport,
-  TascoRetrievalTraceReplayResponse,
-  TascoSearchResponse,
-  TascoWorkspaceBootstrap,
+import {
+  deptId,
+  type ApiEnvelope,
+  type TascoAskResponse,
+  type TascoDocumentDetailResponse,
+  type TascoEvalCaseResult,
+  type TascoEvalReport,
+  type TascoRetrievalTraceReplayResponse,
+  type TascoSearchResponse,
+  type TascoWorkspaceBootstrap,
 } from '../../../packages/shared/src/index.js'
 import app from '../src/app.js'
 import { getPool } from '../src/db/pool.js'
@@ -27,6 +28,12 @@ try {
   const serializedBootstrap = JSON.stringify(bootstrap.data ?? {})
   expect(!serializedBootstrap.includes('answerEn') && !serializedBootstrap.includes('answerVi'), 'browser bootstrap exposed seeded answer text')
   expect(!serializedBootstrap.includes('publicEvaluation') && !serializedBootstrap.includes('permissionCases'), 'browser bootstrap exposed evaluation internals')
+  const departmentIds = new Set((bootstrap.data?.departments ?? []).map((department) => department.id))
+  expect(departmentIds.size === 8, `expected 8 tracked departments, got ${departmentIds.size}`)
+  expect(
+    bootstrap.data?.users.every((user) => departmentIds.has(deptId(user.department))) === true,
+    'one or more canonical users are not assigned to a tracked department'
+  )
 
   const permissionCases = await request<ApiEnvelope<TascoEvalCaseResult[]>>('/api/v1/workspace/permission-test', {
     method: 'POST',

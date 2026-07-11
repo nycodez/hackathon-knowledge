@@ -1,5 +1,4 @@
 import {
-  DEPARTMENT_LABELS,
   type TascoDepartment,
   type TascoDocument,
   type TascoPermissionCase,
@@ -17,6 +16,12 @@ interface QuestionRow {
   question_vi: string
   answer_en: string
   answer_vi: string
+}
+
+interface DepartmentRow {
+  id: TascoDepartment['id']
+  name_en: string
+  name_vi: string
 }
 
 interface SubsidiaryRow {
@@ -47,7 +52,8 @@ export default class WorkspaceRepository {
   private readonly users = new UsersRepository()
 
   public async load(): Promise<TascoSeedData> {
-    const [users, documents, questions, subsidiaries, permissionCases, publicEvaluation] = await Promise.all([
+    const [departments, users, documents, questions, subsidiaries, permissionCases, publicEvaluation] = await Promise.all([
+      this.listDepartments(),
       this.users.list(),
       this.listDocuments(),
       this.listQuestions(),
@@ -56,7 +62,7 @@ export default class WorkspaceRepository {
       this.listPublicEvaluation(),
     ])
     return {
-      departments: Object.entries(DEPARTMENT_LABELS).map(([id, label]) => ({ id, ...label })) as TascoDepartment[],
+      departments,
       users,
       documents,
       questions,
@@ -65,6 +71,18 @@ export default class WorkspaceRepository {
       permissionCases,
       publicEvaluation,
     }
+  }
+
+  private async listDepartments(): Promise<TascoDepartment[]> {
+    const result = await query<DepartmentRow>(
+      `
+        SELECT id, name_en, name_vi
+        FROM tasco_departments
+        WHERE tenant_id = 'tasco-demo'
+        ORDER BY id
+      `
+    )
+    return result.rows.map((row) => ({ id: row.id, en: row.name_en, vi: row.name_vi }))
   }
 
   public async findQuestion(rawQuestion: string): Promise<TascoQuestion | null> {

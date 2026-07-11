@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { RouterLink } from '@angular/router'
-import type { TascoClassification, TascoRuntimeMeta, TascoWorkspaceBootstrap } from '@hackathon/shared'
+import { deptId, type TascoClassification, type TascoRuntimeMeta, type TascoWorkspaceBootstrap } from '@hackathon/shared'
 import { finalize, forkJoin } from 'rxjs'
 import { ApiService, type KnowledgeEvalRun } from '../core/api.service'
 
@@ -78,6 +78,36 @@ const classifications: TascoClassification[] = ['Public', 'Internal', 'Confident
           </article>
         </div>
 
+        <article class="scope-card table-card department-directory">
+          <div class="section-heading">
+            <div><span class="eyebrow">Organization directory</span><h2>Departments and users</h2></div>
+            <span class="status-chip neutral">{{ departmentRoster().length }} departments · {{ meta()?.counts?.users ?? 0 }} users</span>
+          </div>
+          <div class="table-scroll">
+            <table class="policy-table department-table">
+              <thead><tr><th>Department</th><th>Vietnamese</th><th>Users</th><th>Subsidiary coverage</th></tr></thead>
+              <tbody>
+                @for (department of departmentRoster(); track department.id) {
+                  <tr>
+                    <td><span class="department-code">{{ department.id }}</span><strong>{{ department.en }}</strong></td>
+                    <td>{{ department.vi }}</td>
+                    <td>
+                      <div class="department-user-list">
+                        @for (user of department.users; track user.id) {
+                          <span class="department-user"><strong>{{ user.name }}</strong><small>{{ user.id }} · {{ user.role }}</small></span>
+                        } @empty {
+                          <span class="muted-copy">No assigned users</span>
+                        }
+                      </div>
+                    </td>
+                    <td>{{ department.subsidiaries.join(', ') || '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </article>
+
         <div class="home-action-grid" aria-label="Enterprise knowledge tools">
           <a class="home-action-card" routerLink="/secure-ask"><span>◇</span><div><strong>Secure Ask</strong><small>Compare answers across canonical personas.</small></div><b>→</b></a>
           <a class="home-action-card" routerLink="/access-rules"><span>⌾</span><div><strong>Access Rules</strong><small>Replay a live source-permission decision.</small></div><b>→</b></a>
@@ -100,6 +130,14 @@ export class HomePage implements OnInit {
     name,
     count: this.world()?.documents.filter((document) => document.classification === name).length ?? 0,
   })))
+  protected readonly departmentRoster = computed(() => (this.world()?.departments ?? []).map((department) => {
+    const users = (this.world()?.users ?? []).filter((user) => deptId(user.department) === department.id)
+    return {
+      ...department,
+      users,
+      subsidiaries: [...new Set(users.map((user) => user.subsidiaryId))].sort(),
+    }
+  }))
   protected readonly evaluationScore = computed(() => {
     const run = this.latest()
     return run ? `${run.score}/${run.total}` : 'Not run'

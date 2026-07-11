@@ -279,4 +279,58 @@ export const secureKnowledgeMigrations: Array<{ id: string; sql: string }> = [
       REVOKE UPDATE, DELETE ON retrieval_audit_events FROM PUBLIC;
     `,
   },
+  {
+    id: '004_normalize_tasco_departments',
+    sql: `
+      CREATE TABLE IF NOT EXISTS tasco_departments (
+        tenant_id varchar(128) NOT NULL,
+        id varchar(32) NOT NULL,
+        name_en varchar(255) NOT NULL,
+        name_vi varchar(255) NOT NULL,
+        metadata jsonb NOT NULL DEFAULT '{}',
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now(),
+        PRIMARY KEY (tenant_id, id)
+      );
+
+      INSERT INTO tasco_departments (tenant_id, id, name_en, name_vi, metadata)
+      VALUES
+        ('tasco-demo', 'COMP', 'Company', 'Công ty', '{"source":"canonical_department_catalog"}'),
+        ('tasco-demo', 'HR', 'Human Resources', 'Nhân sự', '{"source":"canonical_department_catalog"}'),
+        ('tasco-demo', 'FIN', 'Finance', 'Tài chính', '{"source":"canonical_department_catalog"}'),
+        ('tasco-demo', 'PROD', 'Product', 'Sản phẩm', '{"source":"canonical_department_catalog"}'),
+        ('tasco-demo', 'ENG', 'Engineering', 'Kỹ thuật', '{"source":"canonical_department_catalog"}'),
+        ('tasco-demo', 'OPS', 'Operations', 'Vận hành', '{"source":"canonical_department_catalog"}'),
+        ('tasco-demo', 'LEGAL', 'Legal & Compliance', 'Pháp chế & Tuân thủ', '{"source":"canonical_department_catalog"}'),
+        ('tasco-demo', 'EXEC', 'Executive Office', 'Ban Điều hành', '{"source":"canonical_department_catalog"}')
+      ON CONFLICT (tenant_id, id) DO UPDATE SET
+        name_en = EXCLUDED.name_en,
+        name_vi = EXCLUDED.name_vi,
+        metadata = EXCLUDED.metadata,
+        updated_at = now();
+
+      ALTER TABLE tasco_users
+        ADD COLUMN IF NOT EXISTS tenant_id varchar(128) NOT NULL DEFAULT 'tasco-demo';
+
+      CREATE INDEX IF NOT EXISTS tasco_departments_tenant_name_idx
+        ON tasco_departments (tenant_id, name_en);
+      CREATE INDEX IF NOT EXISTS tasco_users_tenant_department_idx
+        ON tasco_users (tenant_id, subsidiary_id, department_id, role);
+
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'tasco_users_department_fk'
+        ) THEN
+          ALTER TABLE tasco_users
+            ADD CONSTRAINT tasco_users_department_fk
+            FOREIGN KEY (tenant_id, department_id)
+            REFERENCES tasco_departments (tenant_id, id)
+            ON UPDATE CASCADE
+            ON DELETE RESTRICT;
+        END IF;
+      END;
+      $$;
+    `,
+  },
 ]
