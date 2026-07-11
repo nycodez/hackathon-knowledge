@@ -16,6 +16,12 @@
             "polyfills": ["zone.js"],
             "tsConfig": "apps/web/tsconfig.app.json",
             "styles": ["apps/web/src/styles.css"]
+          },
+          "configurations": {
+            "development": {
+              "optimization": false,
+              "sourceMap": true
+            }
           }
         },
         "serve": {
@@ -30,4 +36,3 @@
     }
   }
 }
-
