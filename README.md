@@ -1,25 +1,23 @@
 # Hackathon Knowledge
 
-A minimal enterprise-knowledge proof of concept built from the Hackathon Framework. It preserves the generic document workflow and introduces a clearly separated customization area for permission-aware retrieval, policy evidence, and evaluation.
+A minimal enterprise-knowledge proof of concept built from the Hackathon Framework. It keeps the generic document workflow available as an API compatibility layer while centering the product experience on permission-aware retrieval, policy evidence, and evaluation.
 
-## Customization boundary
+## Product navigation
 
-The original Home, Query, Results, and Library navigation remains intact. An HR divider after Library marks where challenge-specific pages begin:
+The primary navigation exposes only the enterprise-knowledge workflow:
 
+- **Home** summarizes the live corpus, identity boundaries, policy coverage, runtime profile, and latest evaluation evidence.
 - **Secure Ask** runs the same-question/different-permission demo against server-resolved identities.
 - **Access Rules** replays the deny-by-default classification and subsidiary policy against live database rows.
 - **Evaluation** runs and persists the permission, context-isolation, and citation-integrity gates.
 
-The generic framework behavior remains available, while `/api/v1/workspace/*` owns the permission-aware knowledge workflow.
+The inherited Query, Results, and Learning Library routes are not part of the PoC navigation. Their generic API behavior remains available for architectural compatibility, while `/api/v1/workspace/*` owns the permission-aware knowledge workflow.
 
 ## Included
 
-- Angular 21 standalone frontend with a minimal left navigation: Home, Query, Results, and Library
-- Chat-style Query page with a bottom composer and source citations
-- Read-only Decision Console with persisted, observable retrieval and response-policy events
-- Durable, resumable conversation sessions on the Results page
-- Nested Library folders with breadcrumb navigation and folder-aware uploads
-- Small-file upload with visible ingestion, OCR, summarization, chunking, and vectorization states
+- Angular 21 standalone frontend with a focused left navigation: Home, Secure Ask, Access Rules, and Evaluation
+- Knowledge-specific Home widgets backed by the live enterprise corpus and evaluation state
+- Generic Query, Results, and Library capabilities retained only as framework compatibility surfaces
 - Express API packaged as a Vercel Function under `/api`
 - PostgreSQL migrations with workspace scoping, full-text search, `vector(1024)`, and HNSW indexing
 - Dependency-free feature-hash embeddings, so retrieval works before an external embedding provider is added
