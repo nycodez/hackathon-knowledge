@@ -49,8 +49,8 @@ const classifications: TascoClassification[] = ['Public', 'Internal', 'Confident
 
           <article class="scope-card">
             <div class="section-heading">
-              <div><span class="eyebrow">Corpus coverage</span><h2>Classification mix</h2></div>
-              <span class="status-chip neutral">{{ meta()?.counts?.documents ?? 0 }} sources</span>
+              <div><span class="eyebrow">Employee discoverability</span><h2>Visible classification mix</h2></div>
+              <span class="status-chip neutral">{{ world()?.documents?.length ?? 0 }} discoverable sources</span>
             </div>
             <div class="classification-widget">
               @for (item of classificationSummary(); track item.name) {

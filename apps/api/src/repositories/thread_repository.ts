@@ -101,7 +101,10 @@ export default class ThreadRepository {
     const thread = threadResult.rows[0]
     if (!thread) return null
     const messageResult = await query<MessageRow>(
-      'SELECT id, role, content, response, created_at FROM tasco_messages WHERE thread_id = $1 ORDER BY created_at, id',
+      `SELECT id, role, content, response, created_at
+       FROM tasco_messages
+       WHERE thread_id = $1
+       ORDER BY created_at, CASE WHEN role = 'user' THEN 0 ELSE 1 END, id`,
       [threadId]
     )
     return {

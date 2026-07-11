@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, OnInit, computed, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms'
-import type { TascoAskResponse, TascoDepartmentId, TascoQuestionPrompt, TascoRole, TascoThreadResponse, TascoThreadSummary, TascoWorkspaceBootstrap } from '@hackathon/shared'
+import type { TascoAskResponse, TascoDepartmentId, TascoDocumentDetailResponse, TascoQuestionPrompt, TascoRole, TascoThreadResponse, TascoThreadSummary, TascoWorkspaceBootstrap } from '@hackathon/shared'
 import { finalize, forkJoin } from 'rxjs'
 import { ApiService, type KnowledgeByRoleAskResponse } from '../core/api.service'
 
@@ -20,18 +20,18 @@ import { ApiService, type KnowledgeByRoleAskResponse } from '../core/api.service
           <label>Department
             <select [value]="selectedDepartment()" (change)="selectDepartment($event)" [disabled]="loading()">
               @for (department of world()?.departments ?? []; track department.id) {
-                <option [value]="department.id">{{ department.id === 'FIN' ? 'Accounting' : department.en }}</option>
+                <option [value]="department.id" [selected]="department.id === selectedDepartment()">{{ department.id === 'FIN' ? 'Accounting' : department.en }}</option>
               }
             </select>
           </label>
           <label>Role
             <select [value]="selectedRole()" (change)="selectRole($event)" [disabled]="loading()">
-              @for (role of roles; track role) { <option [value]="role">{{ role }}</option> }
+              @for (role of roles; track role) { <option [value]="role" [selected]="role === selectedRole()">{{ role }}</option> }
             </select>
           </label>
           <label>Language
             <select [value]="language()" (change)="selectLanguage($event)">
-              <option value="en">English</option><option value="vi">Tiếng Việt</option>
+              <option value="en" [selected]="language() === 'en'">English</option><option value="vi" [selected]="language() === 'vi'">Tiếng Việt</option>
             </select>
           </label>
         </div>
@@ -83,7 +83,9 @@ import { ApiService, type KnowledgeByRoleAskResponse } from '../core/api.service
                   </span>
                   <h2>{{ lastQuestion() }}</h2><p>{{ result.answer }}</p>
                   @if (result.citation; as citation) {
-                    <div class="citation-card"><span>Authorized citation</span><strong>{{ citation.sourceId }} · {{ citation.title }}</strong><small>{{ citation.permissionClass }} · {{ citation.departmentId }} · {{ citation.subsidiaryId }}</small></div>
+                    <button class="citation-card" type="button" (click)="openSource(citation.sourceId)">
+                      <span>Authorized citation · open source</span><strong>{{ citation.sourceId }} · {{ citation.title }}</strong><small>{{ citation.permissionClass }} · {{ citation.departmentId }} · {{ citation.subsidiaryId }}</small><b aria-hidden="true">→</b>
+                    </button>
                   } @else if (result.state === 'permission_refusal') {
                     <div class="redaction-proof"><strong>Protected source is provably invisible</strong><span>No source ID · no title · no snippet · no citation</span></div>
                   }
@@ -133,6 +135,30 @@ import { ApiService, type KnowledgeByRoleAskResponse } from '../core/api.service
           </aside>
         </div>
       }
+
+      @if (sourcePreviewOpen()) {
+        <div class="source-preview-backdrop" (click)="closeSourcePreview()">
+          <section class="source-preview-modal" role="dialog" aria-modal="true" aria-labelledby="source-preview-title" (click)="$event.stopPropagation()">
+            <header>
+              <div><span class="eyebrow">Permission-checked source</span><h2 id="source-preview-title">{{ sourcePreview()?.document?.titleEn ?? 'Loading source…' }}</h2></div>
+              <button class="preview-close" type="button" (click)="closeSourcePreview()" aria-label="Close source preview">×</button>
+            </header>
+            @if (sourcePreviewLoading()) {
+              <div class="preview-state" role="status">Loading authorized source content…</div>
+            } @else if (sourcePreviewError()) {
+              <div class="preview-state error" role="alert">{{ sourcePreviewError() }}</div>
+            } @else if (sourcePreview(); as detail) {
+              <div class="source-preview-meta">
+                <span class="status-chip allowed">Authorized</span>
+                <span class="classification" [class.internal]="detail.document.classification === 'Internal'" [class.confidential]="detail.document.classification === 'Confidential'" [class.public]="detail.document.classification === 'Public'" [class.restricted]="detail.document.classification === 'Restricted'">{{ detail.document.classification }}</span>
+                <span>{{ detail.document.id }} · {{ detail.document.department }}</span>
+              </div>
+              <div class="source-preview-content"><pre>{{ detail.content }}</pre></div>
+              <footer><span>{{ detail.chunks?.length ?? 0 }} indexed chunks</span><button class="button secondary" type="button" (click)="closeSourcePreview()">Close</button></footer>
+            }
+          </section>
+        </div>
+      }
     </section>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -153,6 +179,10 @@ export class SecureAskPage implements OnInit {
   protected readonly loading = signal(true)
   protected readonly sending = signal(false)
   protected readonly error = signal('')
+  protected readonly sourcePreviewOpen = signal(false)
+  protected readonly sourcePreviewLoading = signal(false)
+  protected readonly sourcePreviewError = signal('')
+  protected readonly sourcePreview = signal<TascoDocumentDetailResponse | null>(null)
   protected readonly lastQuestion = signal('')
   protected readonly questionControl = new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(2000)] })
   protected readonly selectedUserId = computed(() => `AUTO-${this.selectedDepartment()}-${this.selectedRole() === 'Employee' ? 'EMP' : this.selectedRole() === 'Manager' ? 'MGR' : this.selectedRole() === 'Director' ? 'DIR' : 'EXEC'}`)
@@ -164,6 +194,11 @@ export class SecureAskPage implements OnInit {
   })
 
   ngOnInit(): void { this.load() }
+
+  @HostListener('document:keydown.escape')
+  protected closePreviewOnEscape(): void {
+    if (this.sourcePreviewOpen()) this.closeSourcePreview()
+  }
 
   protected load(): void {
     this.loading.set(true); this.error.set('')
@@ -195,7 +230,28 @@ export class SecureAskPage implements OnInit {
 
   protected openThread(thread: TascoThreadSummary): void { this.activeThreadId.set(thread.id); this.loadThread(thread.id) }
 
-  private identityChanged(): void { this.response.set(null); this.comparison.set(null); this.history.set(null); this.activeThreadId.set(undefined); this.loadThreads() }
+  protected openSource(documentId: string): void {
+    this.sourcePreviewOpen.set(true)
+    this.sourcePreviewLoading.set(true)
+    this.sourcePreviewError.set('')
+    this.sourcePreview.set(null)
+    this.api.knowledgeDocumentDetail(this.selectedUserId(), documentId, this.language()).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.sourcePreviewLoading.set(false))
+    ).subscribe({
+      next: (detail) => this.sourcePreview.set(detail),
+      error: (error: unknown) => this.sourcePreviewError.set(this.api.message(error)),
+    })
+  }
+
+  protected closeSourcePreview(): void {
+    this.sourcePreviewOpen.set(false)
+    this.sourcePreviewLoading.set(false)
+    this.sourcePreviewError.set('')
+    this.sourcePreview.set(null)
+  }
+
+  private identityChanged(): void { this.closeSourcePreview(); this.response.set(null); this.comparison.set(null); this.history.set(null); this.activeThreadId.set(undefined); this.loadThreads() }
 
   private loadThreads(preferredThreadId?: string): void {
     this.api.knowledgeThreads(this.selectedUserId()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
