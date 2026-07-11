@@ -11,7 +11,7 @@ import { ApiService } from '../core/api.service'
   standalone: true,
   imports: [DatePipe, ReactiveFormsModule, RouterLink],
   template: `
-    <section class="page query-page">
+    <section class="page query-page" [class.is-resizing-console]="resizingConsole()" [style.--console-height]="consoleHeight() + 'px'">
       <header class="page-header compact-header">
         <div><span class="eyebrow">Query</span><h1>{{ conversation()?.title ?? 'New conversation' }}</h1></div>
         <a class="button secondary" routerLink="/query">New conversation</a>
@@ -66,6 +66,21 @@ import { ApiService } from '../core/api.service'
       </form>
 
       <div class="decision-console" role="log" aria-live="polite" data-readonly="true" aria-label="Decision console">
+        <div
+          class="console-resize-handle"
+          role="separator"
+          tabindex="0"
+          aria-label="Resize console"
+          aria-orientation="horizontal"
+          [attr.aria-valuemin]="minimumConsoleHeight"
+          [attr.aria-valuemax]="maximumConsoleHeight()"
+          [attr.aria-valuenow]="consoleHeight()"
+          (pointerdown)="startConsoleResize($event)"
+          (pointermove)="moveConsoleResize($event)"
+          (pointerup)="finishConsoleResize($event)"
+          (pointercancel)="finishConsoleResize($event)"
+          (keydown)="resizeConsoleWithKeyboard($event)"
+        ><i></i></div>
         <div class="console-events">
           @if (!displayedTrace().length) {
             <div class="console-empty"><span>›_</span></div>
@@ -98,7 +113,13 @@ export class QueryPage implements OnInit {
   protected readonly loading = signal(false)
   protected readonly sending = signal(false)
   protected readonly error = signal('')
+  protected readonly minimumConsoleHeight = 110
+  protected readonly consoleHeight = signal(150)
+  protected readonly maximumConsoleHeight = signal(560)
+  protected readonly resizingConsole = signal(false)
   private readonly pendingTrace = signal<DecisionTraceEvent[]>([])
+  private resizeStartY = 0
+  private resizeStartHeight = 0
   protected readonly displayedTrace = computed(() => {
     if (this.pendingTrace().length) return this.pendingTrace()
     const messages = this.conversation()?.messages ?? []
@@ -130,6 +151,45 @@ export class QueryPage implements OnInit {
       event.preventDefault()
       this.submit()
     }
+  }
+
+  protected startConsoleResize(event: PointerEvent): void {
+    if (event.button !== 0) return
+    const handle = event.currentTarget as HTMLElement
+    this.maximumConsoleHeight.set(this.consoleHeightLimit())
+    this.resizeStartY = event.clientY
+    this.resizeStartHeight = this.consoleHeight()
+    this.resizingConsole.set(true)
+    handle.setPointerCapture(event.pointerId)
+    event.preventDefault()
+  }
+
+  protected moveConsoleResize(event: PointerEvent): void {
+    if (!this.resizingConsole()) return
+    this.consoleHeight.set(this.clampConsoleHeight(this.resizeStartHeight + this.resizeStartY - event.clientY))
+  }
+
+  protected finishConsoleResize(event: PointerEvent): void {
+    if (!this.resizingConsole()) return
+    const handle = event.currentTarget as HTMLElement
+    if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId)
+    this.resizingConsole.set(false)
+  }
+
+  protected resizeConsoleWithKeyboard(event: KeyboardEvent): void {
+    this.maximumConsoleHeight.set(this.consoleHeightLimit())
+    const changes: Partial<Record<KeyboardEvent['key'], number>> = {
+      ArrowUp: 24,
+      ArrowDown: -24,
+      PageUp: 80,
+      PageDown: -80,
+    }
+    if (event.key === 'Home') this.consoleHeight.set(this.minimumConsoleHeight)
+    else if (event.key === 'End') this.consoleHeight.set(this.maximumConsoleHeight())
+    else if (changes[event.key] !== undefined) {
+      this.consoleHeight.set(this.clampConsoleHeight(this.consoleHeight() + (changes[event.key] ?? 0)))
+    } else return
+    event.preventDefault()
   }
 
   protected submit(): void {
@@ -178,6 +238,14 @@ export class QueryPage implements OnInit {
   private scrollToBottom(): void {
     const element = this.chatSurface?.nativeElement
     if (element) element.scrollTop = element.scrollHeight
+  }
+
+  private clampConsoleHeight(height: number): number {
+    return Math.min(this.maximumConsoleHeight(), Math.max(this.minimumConsoleHeight, Math.round(height)))
+  }
+
+  private consoleHeightLimit(): number {
+    return Math.max(this.minimumConsoleHeight, Math.floor(window.innerHeight * 0.62))
   }
 }
 
