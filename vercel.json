@@ -7,7 +7,7 @@
   "fluid": true,
   "regions": ["sin1"],
   "functions": {
-    "api/**/*.ts": {
+    "api/**/*.js": {
       "maxDuration": 60
     }
   },

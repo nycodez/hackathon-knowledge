@@ -74,7 +74,7 @@ import { ApiService, type KnowledgeByRoleAskResponse } from '../core/api.service
               </article>
             }
 
-            <form class="secure-composer" (ngSubmit)="submit()">
+            <form class="secure-composer" (submit)="submit(); $event.preventDefault()">
               <textarea [formControl]="questionControl" rows="2" placeholder="Ask the enterprise knowledge base…" aria-label="Enterprise question"></textarea>
               <button class="button primary" type="submit" [disabled]="questionControl.invalid || sending()">
                 {{ sending() ? 'Checking policy…' : 'Ask securely' }}
