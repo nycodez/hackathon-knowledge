@@ -77,7 +77,7 @@ import { ApiService, type KnowledgeEvalRun } from '../core/api.service'
               <tbody>
                 @for (item of result.publicResults; track item.questionId) {
                   <tr>
-                    <td>{{ item.questionId }}</td>
+                    <td class="eval-question"><strong>{{ item.questionId }}</strong><small>{{ item.questionVi ?? item.category ?? 'Workbook evaluation prompt' }}</small></td>
                     <td>{{ item.user.id }}</td>
                     <td>{{ sourceIds(item) }}</td>
                     <td>{{ item.answerType }}</td>

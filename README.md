@@ -155,6 +155,7 @@ Submission/integration artifacts:
 - [`docs/openapi.yaml`](docs/openapi.yaml) — OpenAPI 3.1 contract
 - [`docs/mytasco_client.dart`](docs/mytasco_client.dart) — configurable Dart adapter with one guarded 401 refresh retry
 - [`docs/rest-examples.http`](docs/rest-examples.http) — staff, organization, search, answer, and refusal examples
+- [`docs/demo-and-security.md`](docs/demo-and-security.md) — 10 grounded Q&A examples, eight permission cases, ACL enforcement, and data provenance
 
 ## Verification
 

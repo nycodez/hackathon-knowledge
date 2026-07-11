@@ -23,7 +23,7 @@ export const vi: Record<I18nKey, string> = {
   empty: 'Chưa có dữ liệu',
   retry: 'Thử lại',
   documentManagement: 'Quản lý tài liệu',
-  documentIntro: 'Nguồn dữ liệu trong cơ sở dữ liệu kèm phân loại, phòng ban, công ty con và phần nội dung song ngữ.',
+  documentIntro: 'Nguồn tiếng Việt trong cơ sở dữ liệu kèm phân loại, phòng ban, công ty con và phần nội dung theo phạm vi quyền.',
   allDepartments: 'Tất cả phòng ban',
   all: 'Tất cả',
   backDocuments: 'Quay lại Tài liệu',

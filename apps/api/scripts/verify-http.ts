@@ -20,6 +20,14 @@ const address = server.address() as AddressInfo
 const baseUrl = `http://127.0.0.1:${address.port}`
 const failures: string[] = []
 
+interface CopEnvelope<T> {
+  status: 'success' | 'error'
+  message?: string
+  body?: T
+  requestId: string
+  code?: string
+}
+
 try {
   const genericHealth = await request<ApiEnvelope<{ database: string }>>('/api/health')
   expect(genericHealth.success && genericHealth.data?.database === 'connected', 'generic /api routes were not preserved')
@@ -34,6 +42,34 @@ try {
     bootstrap.data?.users.every((user) => departmentIds.has(deptId(user.department))) === true,
     'one or more canonical users are not assigned to a tracked department'
   )
+
+  const staff = await request<CopEnvelope<{
+    result: Array<{ staffId: number; staffName: string; email: string | null }>
+    pageInfo: { totalRecord: number }
+  }>>('/mytasco/v1/staff/search', {
+    method: 'POST',
+    headers: {
+      'authorization': 'Bearer demo-U001',
+      'content-type': 'application/json',
+      'x-app-code': 'MYTASCO',
+      'x-request-id': 'f1714244-06d4-4eaa-a894-9847f9f286f4',
+    },
+    body: JSON.stringify({ example: { keyword: 'Nguyễn', status: 1 }, pageInfo: { pageSize: 5, currentPage: 0 } }),
+  })
+  expect(staff.status === 'success' && staff.message === 'SUCCESS', 'My Tasco staff search did not use the COP success envelope')
+  expect(staff.requestId === 'f1714244-06d4-4eaa-a894-9847f9f286f4', 'My Tasco facade did not echo X-Request-Id')
+  expect((staff.body?.pageInfo.totalRecord ?? 0) > 0, 'My Tasco staff search did not return canonical users')
+  expect(staff.body?.result.every((item) => item.staffId > 10_000 && item.email?.endsWith('@synthetic.local')) === true, 'My Tasco staff DTOs were not stable workbook identities')
+
+  const organization = await request<CopEnvelope<{ result: Array<{ children?: unknown[] }> }>>(
+    '/mytasco/v1/organization/tree?depth=2',
+    { headers: { 'x-app-code': 'MYTASCO' } }
+  )
+  expect(organization.body?.result[0]?.children?.length === 8, 'My Tasco organization graph did not return eight departments')
+
+  const invalidAppCode = await fetch(`${baseUrl}/mytasco/v1/organization/tree`, { headers: { 'x-app-code': 'WRONG' } })
+  const invalidAppCodeBody = await invalidAppCode.json() as CopEnvelope<never>
+  expect(invalidAppCode.status === 400 && invalidAppCodeBody.code === 'invalid_request', 'My Tasco facade accepted an invalid X-App-Code')
 
   const permissionCases = await request<ApiEnvelope<TascoEvalCaseResult[]>>('/api/v1/workspace/permission-test', {
     method: 'POST',
@@ -103,6 +139,7 @@ console.log(JSON.stringify({
   status: failures.length ? 'failed' : 'passed',
   gates: {
     genericApiPreserved: !failures.some((failure) => failure.includes('generic /api')),
+    myTascoCompatibility: !failures.some((failure) => failure.includes('My Tasco')),
     permissionCases: '8/8',
     publicEvaluation: '50/50',
     leaks: 0,

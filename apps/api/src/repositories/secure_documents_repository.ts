@@ -109,7 +109,11 @@ export default class DocumentsRepository {
           AND s.subsidiary_id = $2
           AND ($4::text IS NULL OR s.permission_class = $4)
           AND ($5::text IS NULL OR s.department_id = $5)
-          AND ($6::text IS NULL OR c.metadata->>'language' = $6)
+          AND (
+            $6::text IS NULL
+            OR c.metadata->>'language' = $6
+            OR c.metadata->>'source' = 'ai_workspace_dataset_vietnamese_participants.xlsm'
+          )
           AND (
             s.permission_class IN ('Public', 'Internal')
             OR (s.permission_class = 'Confidential' AND ($7 = 'Executive' OR s.department_id = $8))
@@ -173,7 +177,11 @@ export default class DocumentsRepository {
             AND s.subsidiary_id = $2
             AND ($6::text IS NULL OR s.permission_class = $6)
             AND ($7::text IS NULL OR s.department_id = $7)
-            AND ($8::text IS NULL OR c.metadata->>'language' = $8)
+            AND (
+              $8::text IS NULL
+              OR c.metadata->>'language' = $8
+              OR c.metadata->>'source' = 'ai_workspace_dataset_vietnamese_participants.xlsm'
+            )
             AND (
               s.permission_class IN ('Public', 'Internal')
               OR (s.permission_class = 'Confidential' AND ($4 = 'Executive' OR s.department_id = $5))
@@ -274,13 +282,16 @@ export default class DocumentsRepository {
           AND c.deleted_at IS NULL
           AND s.subsidiary_id = $2
           AND s.source_record_id = $3
-          AND c.metadata->>'language' = $6
+          AND (
+            c.metadata->>'language' = $6
+            OR c.metadata->>'source' = 'ai_workspace_dataset_vietnamese_participants.xlsm'
+          )
           AND (
             s.permission_class IN ('Public', 'Internal')
             OR (s.permission_class = 'Confidential' AND ($4 = 'Executive' OR s.department_id = $5))
             OR (s.permission_class = 'Restricted' AND $4 = 'Executive')
           )
-        ORDER BY c.chunk_index ASC
+        ORDER BY CASE WHEN c.metadata->>'language' = $6 THEN 0 ELSE 1 END, c.chunk_index ASC
         LIMIT 1
       `,
       [principal.tenantId, principal.subsidiaryId, documentId, principal.role, deptId(principal.departmentId), language]

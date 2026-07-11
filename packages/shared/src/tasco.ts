@@ -259,6 +259,9 @@ export interface TascoEvalCaseResult {
 
 export interface TascoPublicEvalResult {
   questionId: string
+  questionVi?: string
+  category?: string
+  difficulty?: 'Easy' | 'Medium' | 'Hard'
   expected: TascoEvalExpectation
   actual: TascoEvalExpectation
   passed: boolean
@@ -474,8 +477,8 @@ const questions: TascoQuestion[] = [
     documentId: 'DOC039',
     questionEn: 'What is in the M&A plan this year?',
     questionVi: 'Kế hoạch M&A năm nay có gì?',
-    answerEn: 'Per the M&A Plan (DOC039), the simulated plan outlines candidate targets, valuation ranges, and an integration timeline - reserved to the Executive office.',
-    answerVi: 'Theo Kế hoạch M&A giả lập (DOC039), bản kế hoạch nêu các mục tiêu tiềm năng, khoảng định giá và lộ trình tích hợp - chỉ dành cho Ban Điều hành.',
+    answerEn: 'Per the M&A Plan (DOC039), the plan focuses on companies with complementary data, AI, or digital-service capabilities; the information is Restricted.',
+    answerVi: 'Theo Kế hoạch M&A giả lập (DOC039), kế hoạch tập trung vào các công ty có năng lực dữ liệu, AI hoặc dịch vụ số bổ trợ; thông tin này được phân loại Restricted.',
   },
   {
     documentId: 'DOC003',
@@ -666,6 +669,9 @@ export function runPublicEvaluation(data = createTascoDemoData()): TascoPublicEv
     const actual: TascoEvalExpectation = documents.every((document) => canAccess(user, document)) ? 'Allow' : 'Deny'
     return {
       questionId: row.questionId,
+      questionVi: row.questionVi,
+      category: row.category,
+      difficulty: row.difficulty,
       expected: row.expected,
       actual,
       passed: actual === row.expected,

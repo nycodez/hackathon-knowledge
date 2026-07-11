@@ -38,7 +38,9 @@ router.use((req, res, next) => {
   }
 
   const authorization = req.header('authorization')
-  if (authorization && !/^Bearer demo-U\d{3}$/.test(authorization)) {
+  const demoToken = authorization?.match(/^Bearer demo-U(\d{3})$/)
+  const demoUserNumber = demoToken ? Number(demoToken[1]) : null
+  if (authorization && (!demoToken || demoUserNumber === null || demoUserNumber < 1 || demoUserNumber > 32)) {
     copError(res, 401, 'unauthorized', 'Bearer token is invalid or expired', 'the mock facade accepts demo-U001 through demo-U032')
     return
   }

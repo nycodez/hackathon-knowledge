@@ -16,7 +16,7 @@ const classifications: TascoClassification[] = ['Public', 'Internal', 'Confident
         <div>
           <span class="eyebrow">Enterprise knowledge PoC</span>
           <h1>Useful answers without crossing permission boundaries.</h1>
-          <p>Explore a bilingual knowledge corpus where identity, subsidiary, department, role, and classification are enforced before retrieval.</p>
+          <p>Explore the supplied Vietnamese knowledge corpus with bilingual prompts and identity, subsidiary, department, role, and classification enforced before retrieval.</p>
         </div>
         <a class="button primary" routerLink="/secure-ask">Try Secure Ask <span aria-hidden="true">→</span></a>
       </header>
@@ -27,7 +27,7 @@ const classifications: TascoClassification[] = ['Public', 'Internal', 'Confident
         <div class="state-card error" role="alert">{{ error() }} <button class="button secondary" type="button" (click)="load()">Retry</button></div>
       } @else {
         <div class="metric-grid">
-          <article class="metric-card"><span>Knowledge sources</span><strong>{{ meta()?.counts?.documents ?? 0 }}</strong><small>{{ meta()?.counts?.chunks ?? 0 }} bilingual chunks</small></article>
+          <article class="metric-card"><span>Knowledge sources</span><strong>{{ meta()?.counts?.documents ?? 0 }}</strong><small>{{ meta()?.counts?.chunks ?? 0 }} permission-scoped chunks</small></article>
           <article class="metric-card"><span>Canonical identities</span><strong>{{ meta()?.counts?.users ?? 0 }}</strong><small>{{ meta()?.counts?.departments ?? 0 }} departments · {{ meta()?.counts?.subsidiaries ?? 0 }} subsidiaries</small></article>
           <article class="metric-card"><span>Permission gates</span><strong>{{ permissionScore() }}</strong><small>{{ permissionDetail() }}</small></article>
           <article class="metric-card"><span>Latest evaluation</span><strong>{{ evaluationScore() }}</strong><small>{{ evaluationDetail() }}</small></article>

@@ -1,6 +1,965 @@
 // Generated from the synthetic participant workbook supplied for the challenge.
 // Keep field names aligned with the workbook so evaluation identities remain auditable.
 
-export const WORKBOOK_USERS = [{"id":"U001","name":"Nguyễn Văn An","department":"Human Resources","role":"Employee","email":"user001@synthetic.local","status":"Active"},{"id":"U002","name":"Trần Thị Bình","department":"Finance","role":"Manager","email":"user002@synthetic.local","status":"Active"},{"id":"U003","name":"Lê Minh Châu","department":"Product","role":"Director","email":"user003@synthetic.local","status":"Active"},{"id":"U004","name":"Phạm Quốc Dũng","department":"Engineering","role":"Employee","email":"user004@synthetic.local","status":"Active"},{"id":"U005","name":"Hoàng Thu Hà","department":"Operations","role":"Manager","email":"user005@synthetic.local","status":"Active"},{"id":"U006","name":"Đỗ Anh Khoa","department":"Legal & Compliance","role":"Director","email":"user006@synthetic.local","status":"Active"},{"id":"U007","name":"Vũ Thị Lan","department":"Executive Office","role":"Executive","email":"user007@synthetic.local","status":"Active"},{"id":"U008","name":"Bùi Đức Minh","department":"Company","role":"Employee","email":"user008@synthetic.local","status":"Active"},{"id":"U009","name":"Đặng Thanh Nga","department":"Human Resources","role":"Employee","email":"user009@synthetic.local","status":"Active"},{"id":"U010","name":"Phan Hải Nam","department":"Finance","role":"Manager","email":"user010@synthetic.local","status":"Active"},{"id":"U011","name":"Mai Phương Linh","department":"Product","role":"Director","email":"user011@synthetic.local","status":"Active"},{"id":"U012","name":"Tạ Quang Huy","department":"Engineering","role":"Employee","email":"user012@synthetic.local","status":"Active"},{"id":"U013","name":"Ngô Thùy Dương","department":"Operations","role":"Manager","email":"user013@synthetic.local","status":"Active"},{"id":"U014","name":"Cao Việt Long","department":"Legal & Compliance","role":"Director","email":"user014@synthetic.local","status":"Active"},{"id":"U015","name":"Lý Hồng Nhung","department":"Executive Office","role":"Executive","email":"user015@synthetic.local","status":"Active"},{"id":"U016","name":"Trương Gia Bảo","department":"Company","role":"Employee","email":"user016@synthetic.local","status":"Active"},{"id":"U017","name":"Đinh Mai Anh","department":"Human Resources","role":"Employee","email":"user017@synthetic.local","status":"Active"},{"id":"U018","name":"Hồ Quốc Khánh","department":"Finance","role":"Manager","email":"user018@synthetic.local","status":"Active"},{"id":"U019","name":"Chu Thanh Tâm","department":"Product","role":"Director","email":"user019@synthetic.local","status":"Active"},{"id":"U020","name":"Võ Minh Đức","department":"Engineering","role":"Employee","email":"user020@synthetic.local","status":"Active"},{"id":"U021","name":"Lâm Hương Giang","department":"Operations","role":"Manager","email":"user021@synthetic.local","status":"Active"},{"id":"U022","name":"Tô Nhật Quang","department":"Legal & Compliance","role":"Director","email":"user022@synthetic.local","status":"Active"},{"id":"U023","name":"Đào Mỹ Linh","department":"Executive Office","role":"Executive","email":"user023@synthetic.local","status":"Active"},{"id":"U024","name":"Nguyễn Hoàng Phúc","department":"Company","role":"Employee","email":"user024@synthetic.local","status":"Active"},{"id":"U025","name":"Trần Hải Yến","department":"Human Resources","role":"Employee","email":"user025@synthetic.local","status":"Active"},{"id":"U026","name":"Lê Tuấn Anh","department":"Finance","role":"Manager","email":"user026@synthetic.local","status":"Active"},{"id":"U027","name":"Phạm Ngọc Mai","department":"Product","role":"Director","email":"user027@synthetic.local","status":"Active"},{"id":"U028","name":"Vũ Đức Thắng","department":"Engineering","role":"Employee","email":"user028@synthetic.local","status":"Active"},{"id":"U029","name":"Bùi Kim Ngân","department":"Operations","role":"Manager","email":"user029@synthetic.local","status":"Active"},{"id":"U030","name":"Đặng Minh Trí","department":"Legal & Compliance","role":"Director","email":"user030@synthetic.local","status":"Active"},{"id":"U031","name":"Hoàng Bảo Ngọc","department":"Executive Office","role":"Executive","email":"user031@synthetic.local","status":"Active"},{"id":"U032","name":"Phan Quốc Việt","department":"Company","role":"Employee","email":"user032@synthetic.local","status":"Active"}] as const
+export const WORKBOOK_USERS = [
+  {
+    "id": "U001",
+    "name": "Nguyễn Văn An",
+    "department": "Human Resources",
+    "role": "Employee",
+    "email": "user001@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U002",
+    "name": "Trần Thị Bình",
+    "department": "Finance",
+    "role": "Manager",
+    "email": "user002@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U003",
+    "name": "Lê Minh Châu",
+    "department": "Product",
+    "role": "Director",
+    "email": "user003@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U004",
+    "name": "Phạm Quốc Dũng",
+    "department": "Engineering",
+    "role": "Employee",
+    "email": "user004@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U005",
+    "name": "Hoàng Thu Hà",
+    "department": "Operations",
+    "role": "Manager",
+    "email": "user005@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U006",
+    "name": "Đỗ Anh Khoa",
+    "department": "Legal & Compliance",
+    "role": "Director",
+    "email": "user006@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U007",
+    "name": "Vũ Thị Lan",
+    "department": "Executive Office",
+    "role": "Executive",
+    "email": "user007@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U008",
+    "name": "Bùi Đức Minh",
+    "department": "Company",
+    "role": "Employee",
+    "email": "user008@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U009",
+    "name": "Đặng Thanh Nga",
+    "department": "Human Resources",
+    "role": "Employee",
+    "email": "user009@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U010",
+    "name": "Phan Hải Nam",
+    "department": "Finance",
+    "role": "Manager",
+    "email": "user010@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U011",
+    "name": "Mai Phương Linh",
+    "department": "Product",
+    "role": "Director",
+    "email": "user011@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U012",
+    "name": "Tạ Quang Huy",
+    "department": "Engineering",
+    "role": "Employee",
+    "email": "user012@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U013",
+    "name": "Ngô Thùy Dương",
+    "department": "Operations",
+    "role": "Manager",
+    "email": "user013@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U014",
+    "name": "Cao Việt Long",
+    "department": "Legal & Compliance",
+    "role": "Director",
+    "email": "user014@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U015",
+    "name": "Lý Hồng Nhung",
+    "department": "Executive Office",
+    "role": "Executive",
+    "email": "user015@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U016",
+    "name": "Trương Gia Bảo",
+    "department": "Company",
+    "role": "Employee",
+    "email": "user016@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U017",
+    "name": "Đinh Mai Anh",
+    "department": "Human Resources",
+    "role": "Employee",
+    "email": "user017@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U018",
+    "name": "Hồ Quốc Khánh",
+    "department": "Finance",
+    "role": "Manager",
+    "email": "user018@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U019",
+    "name": "Chu Thanh Tâm",
+    "department": "Product",
+    "role": "Director",
+    "email": "user019@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U020",
+    "name": "Võ Minh Đức",
+    "department": "Engineering",
+    "role": "Employee",
+    "email": "user020@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U021",
+    "name": "Lâm Hương Giang",
+    "department": "Operations",
+    "role": "Manager",
+    "email": "user021@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U022",
+    "name": "Tô Nhật Quang",
+    "department": "Legal & Compliance",
+    "role": "Director",
+    "email": "user022@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U023",
+    "name": "Đào Mỹ Linh",
+    "department": "Executive Office",
+    "role": "Executive",
+    "email": "user023@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U024",
+    "name": "Nguyễn Hoàng Phúc",
+    "department": "Company",
+    "role": "Employee",
+    "email": "user024@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U025",
+    "name": "Trần Hải Yến",
+    "department": "Human Resources",
+    "role": "Employee",
+    "email": "user025@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U026",
+    "name": "Lê Tuấn Anh",
+    "department": "Finance",
+    "role": "Manager",
+    "email": "user026@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U027",
+    "name": "Phạm Ngọc Mai",
+    "department": "Product",
+    "role": "Director",
+    "email": "user027@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U028",
+    "name": "Vũ Đức Thắng",
+    "department": "Engineering",
+    "role": "Employee",
+    "email": "user028@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U029",
+    "name": "Bùi Kim Ngân",
+    "department": "Operations",
+    "role": "Manager",
+    "email": "user029@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U030",
+    "name": "Đặng Minh Trí",
+    "department": "Legal & Compliance",
+    "role": "Director",
+    "email": "user030@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U031",
+    "name": "Hoàng Bảo Ngọc",
+    "department": "Executive Office",
+    "role": "Executive",
+    "email": "user031@synthetic.local",
+    "status": "Active"
+  },
+  {
+    "id": "U032",
+    "name": "Phan Quốc Việt",
+    "department": "Company",
+    "role": "Employee",
+    "email": "user032@synthetic.local",
+    "status": "Active"
+  }
+] as const
 
-export const WORKBOOK_PUBLIC_EVALUATION = [{"questionId":"P001","category":"HR","userId":"U001","userRole":"Employee","userDepartment":"Human Resources","questionVi":"Chính sách thử việc là gì?","expected":"Allow","documentIds":["DOC001"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P002","category":"HR","userId":"U002","userRole":"Manager","userDepartment":"Finance","questionVi":"Nhân viên được bao nhiêu ngày nghỉ phép năm?","expected":"Allow","documentIds":["DOC002"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P003","category":"Finance","userId":"U010","userRole":"Employee","userDepartment":"Finance","questionVi":"Làm thế nào để nộp yêu cầu hoàn ứng chi phí?","expected":"Allow","documentIds":["DOC011"],"answerType":"Semantic","difficulty":"Easy"},{"questionId":"P004","category":"Product","userId":"U003","userRole":"Employee","userDepartment":"Product","questionVi":"Quy trình phát hành sản phẩm gồm những giai đoạn nào?","expected":"Allow","documentIds":["DOC018"],"answerType":"Summary","difficulty":"Medium"},{"questionId":"P005","category":"Engineering","userId":"U004","userRole":"Employee","userDepartment":"Engineering","questionVi":"Làm thế nào để yêu cầu môi trường phát triển mới?","expected":"Allow","documentIds":["DOC025"],"answerType":"Semantic","difficulty":"Easy"},{"questionId":"P006","category":"Legal","userId":"U006","userRole":"Director","userDepartment":"Legal & Compliance","questionVi":"Chính sách lưu trữ hồ sơ quy định hợp đồng được lưu bao lâu?","expected":"Allow","documentIds":["DOC035"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P007","category":"Executive","userId":"U003","userRole":"Employee","userDepartment":"Product","questionVi":"Ưu tiên chiến lược của công ty năm 2026 là gì?","expected":"Deny","documentIds":["DOC036"],"answerType":"Permission","difficulty":"Medium"},{"questionId":"P008","category":"Executive","userId":"U007","userRole":"Executive","userDepartment":"Executive Office","questionVi":"Ưu tiên chiến lược của công ty năm 2026 là gì?","expected":"Allow","documentIds":["DOC036"],"answerType":"Summary","difficulty":"Medium"},{"questionId":"P009","category":"HR","userId":"U004","userRole":"Employee","userDepartment":"Engineering","questionVi":"Khung lương Product Manager là bao nhiêu?","expected":"Deny","documentIds":["DOC007"],"answerType":"Permission","difficulty":"Medium"},{"questionId":"P010","category":"HR","userId":"U001","userRole":"Employee","userDepartment":"Human Resources","questionVi":"Khung lương Product Manager là bao nhiêu?","expected":"Allow","documentIds":["DOC007"],"answerType":"Exact","difficulty":"Medium"},{"questionId":"P011","category":"Password","userId":"U005","userRole":"Manager","userDepartment":"Operations","questionVi":"Mật khẩu tài khoản công ty cần đáp ứng yêu cầu gì?","expected":"Allow","documentIds":["DOC004"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P012","category":"Travel","userId":"U011","userRole":"Employee","userDepartment":"Product","questionVi":"Mức hoàn chi phí khách sạn công tác trong nước là bao nhiêu?","expected":"Allow","documentIds":["DOC003"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P013","category":"Vendor","userId":"U010","userRole":"Employee","userDepartment":"Finance","questionVi":"Điều khoản thanh toán tiêu chuẩn cho nhà cung cấp là bao lâu?","expected":"Allow","documentIds":["DOC013"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P014","category":"Budget","userId":"U010","userRole":"Employee","userDepartment":"Finance","questionVi":"Chu kỳ lập ngân sách năm bắt đầu khi nào?","expected":"Allow","documentIds":["DOC012"],"answerType":"Exact","difficulty":"Medium"},{"questionId":"P015","category":"Approval","userId":"U010","userRole":"Employee","userDepartment":"Finance","questionVi":"Chi phí trên 200 triệu cần phê duyệt của ai?","expected":"Allow","documentIds":["DOC014"],"answerType":"Exact","difficulty":"Medium"},{"questionId":"P016","category":"Product KPI","userId":"U003","userRole":"Employee","userDepartment":"Product","questionVi":"Activation rate được định nghĩa như thế nào?","expected":"Allow","documentIds":["DOC019"],"answerType":"Semantic","difficulty":"Medium"},{"questionId":"P017","category":"PRD","userId":"U003","userRole":"Employee","userDepartment":"Product","questionVi":"PRD chuẩn cần có những phần nào?","expected":"Allow","documentIds":["DOC020"],"answerType":"Summary","difficulty":"Easy"},{"questionId":"P018","category":"Architecture","userId":"U004","userRole":"Employee","userDepartment":"Engineering","questionVi":"API nội bộ cần có những yêu cầu nào?","expected":"Allow","documentIds":["DOC021"],"answerType":"Semantic","difficulty":"Medium"},{"questionId":"P019","category":"Code","userId":"U004","userRole":"Employee","userDepartment":"Engineering","questionVi":"Merge request cần điều kiện gì trước khi merge?","expected":"Allow","documentIds":["DOC022"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P020","category":"Incident","userId":"U004","userRole":"Employee","userDepartment":"Engineering","questionVi":"Sự cố P1 cần phản hồi trong bao lâu?","expected":"Allow","documentIds":["DOC024"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P021","category":"Support","userId":"U005","userRole":"Manager","userDepartment":"Operations","questionVi":"Hỗ trợ khách hàng được chia thành các level nào?","expected":"Allow","documentIds":["DOC026"],"answerType":"Summary","difficulty":"Easy"},{"questionId":"P022","category":"SLA","userId":"U005","userRole":"Manager","userDepartment":"Operations","questionVi":"SLA mục tiêu cho dịch vụ quan trọng là bao nhiêu?","expected":"Allow","documentIds":["DOC027"],"answerType":"Exact","difficulty":"Medium"},{"questionId":"P023","category":"Privacy","userId":"U006","userRole":"Director","userDepartment":"Legal & Compliance","questionVi":"Sự cố rò rỉ dữ liệu phải báo cáo trong bao lâu?","expected":"Allow","documentIds":["DOC031"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P024","category":"Compliance","userId":"U006","userRole":"Director","userDepartment":"Legal & Compliance","questionVi":"Nhân viên phải hoàn thành đào tạo tuân thủ khi nào?","expected":"Allow","documentIds":["DOC032"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P025","category":"Contract","userId":"U006","userRole":"Director","userDepartment":"Legal & Compliance","questionVi":"Hợp đồng trên 500 triệu cần phê duyệt của ai?","expected":"Allow","documentIds":["DOC033"],"answerType":"Exact","difficulty":"Medium"},{"questionId":"P026","category":"Classification","userId":"U003","userRole":"Employee","userDepartment":"Product","questionVi":"Restricted nghĩa là loại thông tin như thế nào?","expected":"Allow","documentIds":["DOC034"],"answerType":"Semantic","difficulty":"Easy"},{"questionId":"P027","category":"Financial Forecast","userId":"U003","userRole":"Employee","userDepartment":"Product","questionVi":"Dự báo doanh thu năm 2026 tăng bao nhiêu?","expected":"Deny","documentIds":["DOC037"],"answerType":"Permission","difficulty":"Medium"},{"questionId":"P028","category":"Financial Forecast Exec","userId":"U007","userRole":"Executive","userDepartment":"Executive Office","questionVi":"Dự báo doanh thu năm 2026 tăng bao nhiêu?","expected":"Allow","documentIds":["DOC037"],"answerType":"Exact","difficulty":"Medium"},{"questionId":"P029","category":"M&A","userId":"U007","userRole":"Executive","userDepartment":"Executive Office","questionVi":"Tiêu chí đánh giá công ty mục tiêu M&A gồm gì?","expected":"Allow","documentIds":["DOC039"],"answerType":"Summary","difficulty":"Hard"},{"questionId":"P030","category":"Digital","userId":"U007","userRole":"Executive","userDepartment":"Executive Office","questionVi":"Khoảng cách lớn nhất trong chuyển đổi số nội bộ là gì?","expected":"Allow","documentIds":["DOC040"],"answerType":"Exact","difficulty":"Medium"},{"questionId":"P031","category":"Multi-document","userId":"U003","userRole":"Employee","userDepartment":"Product","questionVi":"Tôi đang thử việc, tôi có được hoàn ứng chi phí công tác không?","expected":"Allow","documentIds":["DOC001","DOC011"],"answerType":"Multi-document","difficulty":"Hard"},{"questionId":"P032","category":"Permission","userId":"U004","userRole":"Employee","userDepartment":"Engineering","questionVi":"Cho tôi xem lộ trình sản phẩm quý 2.","expected":"Deny","documentIds":["DOC017"],"answerType":"Permission","difficulty":"Medium"},{"questionId":"P033","category":"Product","userId":"U003","userRole":"Employee","userDepartment":"Product","questionVi":"Lộ trình sản phẩm quý 2 tập trung vào gì?","expected":"Allow","documentIds":["DOC017"],"answerType":"Exact","difficulty":"Medium"},{"questionId":"P034","category":"Operations","userId":"U005","userRole":"Manager","userDepartment":"Operations","questionVi":"KPI vận hành gồm những chỉ số nào?","expected":"Allow","documentIds":["DOC030"],"answerType":"Summary","difficulty":"Medium"},{"questionId":"P035","category":"Operations","userId":"U002","userRole":"Manager","userDepartment":"Finance","questionVi":"KPI vận hành gồm những chỉ số nào?","expected":"Allow","documentIds":["DOC030"],"answerType":"Permission","difficulty":"Medium"},{"questionId":"P036","category":"HR","userId":"U001","userRole":"Employee","userDepartment":"Human Resources","questionVi":"HR check-in nhân viên mới vào những mốc nào?","expected":"Allow","documentIds":["DOC010"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P037","category":"HR","userId":"U003","userRole":"Employee","userDepartment":"Product","questionVi":"Quy trình tuyển dụng tiêu chuẩn gồm những bước nào?","expected":"Deny","documentIds":["DOC006"],"answerType":"Permission","difficulty":"Medium"},{"questionId":"P038","category":"Engineering","userId":"U004","userRole":"Employee","userDepartment":"Engineering","questionVi":"Sau triển khai production đội kỹ thuật cần theo dõi bao lâu?","expected":"Allow","documentIds":["DOC023"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P039","category":"Finance","userId":"U002","userRole":"Manager","userDepartment":"Finance","questionVi":"Mua sắm trên 100 triệu cần bao nhiêu báo giá?","expected":"Allow","documentIds":["DOC015"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P040","category":"Legal","userId":"U006","userRole":"Director","userDepartment":"Legal & Compliance","questionVi":"Dữ liệu cá nhân chỉ được xử lý khi nào?","expected":"Allow","documentIds":["DOC031"],"answerType":"Semantic","difficulty":"Medium"},{"questionId":"P041","category":"Executive","userId":"U007","userRole":"Executive","userDepartment":"Executive Office","questionVi":"Ba trọng tâm kinh doanh năm 2026 là gì?","expected":"Allow","documentIds":["DOC038"],"answerType":"Summary","difficulty":"Medium"},{"questionId":"P042","category":"Executive","userId":"U004","userRole":"Employee","userDepartment":"Engineering","questionVi":"Ba trọng tâm kinh doanh năm 2026 là gì?","expected":"Deny","documentIds":["DOC038"],"answerType":"Permission","difficulty":"Medium"},{"questionId":"P043","category":"Product","userId":"U003","userRole":"Employee","userDepartment":"Product","questionVi":"Mỗi tính năng cần có gì trước khi phát triển?","expected":"Allow","documentIds":["DOC018"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P044","category":"Engineering","userId":"U012","userRole":"Employee","userDepartment":"Engineering","questionVi":"Có được commit secret vào repository không?","expected":"Allow","documentIds":["DOC022"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P045","category":"Company","userId":"U008","userRole":"Employee","userDepartment":"Company","questionVi":"Quà tặng từ đối tác trên 1 triệu cần làm gì?","expected":"Allow","documentIds":["DOC005"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P046","category":"HR","userId":"U001","userRole":"Employee","userDepartment":"Human Resources","questionVi":"Ngân sách đào tạo tối đa mỗi năm là bao nhiêu?","expected":"Allow","documentIds":["DOC009"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P047","category":"Finance","userId":"U010","userRole":"Employee","userDepartment":"Finance","questionVi":"Nhà cung cấp mới cần hồ sơ gì?","expected":"Allow","documentIds":["DOC013"],"answerType":"Summary","difficulty":"Medium"},{"questionId":"P048","category":"Legal","userId":"U014","userRole":"Director","userDepartment":"Legal & Compliance","questionVi":"Hồ sơ nhân sự được lưu trong bao lâu sau khi nghỉ việc?","expected":"Allow","documentIds":["DOC035"],"answerType":"Exact","difficulty":"Medium"},{"questionId":"P049","category":"Operations","userId":"U013","userRole":"Employee","userDepartment":"Operations","questionVi":"Sự cố nghiêm trọng cần cập nhật trạng thái bao lâu một lần?","expected":"Allow","documentIds":["DOC028"],"answerType":"Exact","difficulty":"Easy"},{"questionId":"P050","category":"Product","userId":"U003","userRole":"Employee","userDepartment":"Product","questionVi":"Các chỉ số trọng tâm trong chiến lược sản phẩm là gì?","expected":"Allow","documentIds":["DOC016"],"answerType":"Summary","difficulty":"Medium"}] as const
+export const WORKBOOK_PUBLIC_EVALUATION = [
+  {
+    "questionId": "P001",
+    "category": "HR",
+    "userId": "U001",
+    "userRole": "Employee",
+    "userDepartment": "Human Resources",
+    "questionVi": "Chính sách thử việc là gì?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC001"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P002",
+    "category": "HR",
+    "userId": "U002",
+    "userRole": "Manager",
+    "userDepartment": "Finance",
+    "questionVi": "Nhân viên được bao nhiêu ngày nghỉ phép năm?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC002"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P003",
+    "category": "Finance",
+    "userId": "U010",
+    "userRole": "Employee",
+    "userDepartment": "Finance",
+    "questionVi": "Làm thế nào để nộp yêu cầu hoàn ứng chi phí?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC011"
+    ],
+    "answerType": "Semantic",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P004",
+    "category": "Product",
+    "userId": "U003",
+    "userRole": "Employee",
+    "userDepartment": "Product",
+    "questionVi": "Quy trình phát hành sản phẩm gồm những giai đoạn nào?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC018"
+    ],
+    "answerType": "Summary",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P005",
+    "category": "Engineering",
+    "userId": "U004",
+    "userRole": "Employee",
+    "userDepartment": "Engineering",
+    "questionVi": "Làm thế nào để yêu cầu môi trường phát triển mới?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC025"
+    ],
+    "answerType": "Semantic",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P006",
+    "category": "Legal",
+    "userId": "U006",
+    "userRole": "Director",
+    "userDepartment": "Legal & Compliance",
+    "questionVi": "Chính sách lưu trữ hồ sơ quy định hợp đồng được lưu bao lâu?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC035"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P007",
+    "category": "Executive",
+    "userId": "U003",
+    "userRole": "Employee",
+    "userDepartment": "Product",
+    "questionVi": "Ưu tiên chiến lược của công ty năm 2026 là gì?",
+    "expected": "Deny",
+    "documentIds": [
+      "DOC036"
+    ],
+    "answerType": "Permission",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P008",
+    "category": "Executive",
+    "userId": "U007",
+    "userRole": "Executive",
+    "userDepartment": "Executive Office",
+    "questionVi": "Ưu tiên chiến lược của công ty năm 2026 là gì?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC036"
+    ],
+    "answerType": "Summary",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P009",
+    "category": "HR",
+    "userId": "U004",
+    "userRole": "Employee",
+    "userDepartment": "Engineering",
+    "questionVi": "Khung lương Product Manager là bao nhiêu?",
+    "expected": "Deny",
+    "documentIds": [
+      "DOC007"
+    ],
+    "answerType": "Permission",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P010",
+    "category": "HR",
+    "userId": "U001",
+    "userRole": "Employee",
+    "userDepartment": "Human Resources",
+    "questionVi": "Khung lương Product Manager là bao nhiêu?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC007"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P011",
+    "category": "Password",
+    "userId": "U005",
+    "userRole": "Manager",
+    "userDepartment": "Operations",
+    "questionVi": "Mật khẩu tài khoản công ty cần đáp ứng yêu cầu gì?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC004"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P012",
+    "category": "Travel",
+    "userId": "U011",
+    "userRole": "Employee",
+    "userDepartment": "Product",
+    "questionVi": "Mức hoàn chi phí khách sạn công tác trong nước là bao nhiêu?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC003"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P013",
+    "category": "Vendor",
+    "userId": "U010",
+    "userRole": "Employee",
+    "userDepartment": "Finance",
+    "questionVi": "Điều khoản thanh toán tiêu chuẩn cho nhà cung cấp là bao lâu?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC013"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P014",
+    "category": "Budget",
+    "userId": "U010",
+    "userRole": "Employee",
+    "userDepartment": "Finance",
+    "questionVi": "Chu kỳ lập ngân sách năm bắt đầu khi nào?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC012"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P015",
+    "category": "Approval",
+    "userId": "U010",
+    "userRole": "Employee",
+    "userDepartment": "Finance",
+    "questionVi": "Chi phí trên 200 triệu cần phê duyệt của ai?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC014"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P016",
+    "category": "Product KPI",
+    "userId": "U003",
+    "userRole": "Employee",
+    "userDepartment": "Product",
+    "questionVi": "Activation rate được định nghĩa như thế nào?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC019"
+    ],
+    "answerType": "Semantic",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P017",
+    "category": "PRD",
+    "userId": "U003",
+    "userRole": "Employee",
+    "userDepartment": "Product",
+    "questionVi": "PRD chuẩn cần có những phần nào?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC020"
+    ],
+    "answerType": "Summary",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P018",
+    "category": "Architecture",
+    "userId": "U004",
+    "userRole": "Employee",
+    "userDepartment": "Engineering",
+    "questionVi": "API nội bộ cần có những yêu cầu nào?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC021"
+    ],
+    "answerType": "Semantic",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P019",
+    "category": "Code",
+    "userId": "U004",
+    "userRole": "Employee",
+    "userDepartment": "Engineering",
+    "questionVi": "Merge request cần điều kiện gì trước khi merge?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC022"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P020",
+    "category": "Incident",
+    "userId": "U004",
+    "userRole": "Employee",
+    "userDepartment": "Engineering",
+    "questionVi": "Sự cố P1 cần phản hồi trong bao lâu?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC024"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P021",
+    "category": "Support",
+    "userId": "U005",
+    "userRole": "Manager",
+    "userDepartment": "Operations",
+    "questionVi": "Hỗ trợ khách hàng được chia thành các level nào?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC026"
+    ],
+    "answerType": "Summary",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P022",
+    "category": "SLA",
+    "userId": "U005",
+    "userRole": "Manager",
+    "userDepartment": "Operations",
+    "questionVi": "SLA mục tiêu cho dịch vụ quan trọng là bao nhiêu?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC027"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P023",
+    "category": "Privacy",
+    "userId": "U006",
+    "userRole": "Director",
+    "userDepartment": "Legal & Compliance",
+    "questionVi": "Sự cố rò rỉ dữ liệu phải báo cáo trong bao lâu?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC031"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P024",
+    "category": "Compliance",
+    "userId": "U006",
+    "userRole": "Director",
+    "userDepartment": "Legal & Compliance",
+    "questionVi": "Nhân viên phải hoàn thành đào tạo tuân thủ khi nào?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC032"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P025",
+    "category": "Contract",
+    "userId": "U006",
+    "userRole": "Director",
+    "userDepartment": "Legal & Compliance",
+    "questionVi": "Hợp đồng trên 500 triệu cần phê duyệt của ai?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC033"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P026",
+    "category": "Classification",
+    "userId": "U003",
+    "userRole": "Employee",
+    "userDepartment": "Product",
+    "questionVi": "Restricted nghĩa là loại thông tin như thế nào?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC034"
+    ],
+    "answerType": "Semantic",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P027",
+    "category": "Financial Forecast",
+    "userId": "U003",
+    "userRole": "Employee",
+    "userDepartment": "Product",
+    "questionVi": "Dự báo doanh thu năm 2026 tăng bao nhiêu?",
+    "expected": "Deny",
+    "documentIds": [
+      "DOC037"
+    ],
+    "answerType": "Permission",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P028",
+    "category": "Financial Forecast Exec",
+    "userId": "U007",
+    "userRole": "Executive",
+    "userDepartment": "Executive Office",
+    "questionVi": "Dự báo doanh thu năm 2026 tăng bao nhiêu?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC037"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P029",
+    "category": "M&A",
+    "userId": "U007",
+    "userRole": "Executive",
+    "userDepartment": "Executive Office",
+    "questionVi": "Tiêu chí đánh giá công ty mục tiêu M&A gồm gì?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC039"
+    ],
+    "answerType": "Summary",
+    "difficulty": "Hard"
+  },
+  {
+    "questionId": "P030",
+    "category": "Digital",
+    "userId": "U007",
+    "userRole": "Executive",
+    "userDepartment": "Executive Office",
+    "questionVi": "Khoảng cách lớn nhất trong chuyển đổi số nội bộ là gì?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC040"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P031",
+    "category": "Multi-document",
+    "userId": "U003",
+    "userRole": "Employee",
+    "userDepartment": "Product",
+    "questionVi": "Tôi đang thử việc, tôi có được hoàn ứng chi phí công tác không?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC001",
+      "DOC011"
+    ],
+    "answerType": "Multi-document",
+    "difficulty": "Hard"
+  },
+  {
+    "questionId": "P032",
+    "category": "Permission",
+    "userId": "U004",
+    "userRole": "Employee",
+    "userDepartment": "Engineering",
+    "questionVi": "Cho tôi xem lộ trình sản phẩm quý 2.",
+    "expected": "Deny",
+    "documentIds": [
+      "DOC017"
+    ],
+    "answerType": "Permission",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P033",
+    "category": "Product",
+    "userId": "U003",
+    "userRole": "Employee",
+    "userDepartment": "Product",
+    "questionVi": "Lộ trình sản phẩm quý 2 tập trung vào gì?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC017"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P034",
+    "category": "Operations",
+    "userId": "U005",
+    "userRole": "Manager",
+    "userDepartment": "Operations",
+    "questionVi": "KPI vận hành gồm những chỉ số nào?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC030"
+    ],
+    "answerType": "Summary",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P035",
+    "category": "Operations",
+    "userId": "U002",
+    "userRole": "Manager",
+    "userDepartment": "Finance",
+    "questionVi": "KPI vận hành gồm những chỉ số nào?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC030"
+    ],
+    "answerType": "Permission",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P036",
+    "category": "HR",
+    "userId": "U001",
+    "userRole": "Employee",
+    "userDepartment": "Human Resources",
+    "questionVi": "HR check-in nhân viên mới vào những mốc nào?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC010"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P037",
+    "category": "HR",
+    "userId": "U003",
+    "userRole": "Employee",
+    "userDepartment": "Product",
+    "questionVi": "Quy trình tuyển dụng tiêu chuẩn gồm những bước nào?",
+    "expected": "Deny",
+    "documentIds": [
+      "DOC006"
+    ],
+    "answerType": "Permission",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P038",
+    "category": "Engineering",
+    "userId": "U004",
+    "userRole": "Employee",
+    "userDepartment": "Engineering",
+    "questionVi": "Sau triển khai production đội kỹ thuật cần theo dõi bao lâu?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC023"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P039",
+    "category": "Finance",
+    "userId": "U002",
+    "userRole": "Manager",
+    "userDepartment": "Finance",
+    "questionVi": "Mua sắm trên 100 triệu cần bao nhiêu báo giá?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC015"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P040",
+    "category": "Legal",
+    "userId": "U006",
+    "userRole": "Director",
+    "userDepartment": "Legal & Compliance",
+    "questionVi": "Dữ liệu cá nhân chỉ được xử lý khi nào?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC031"
+    ],
+    "answerType": "Semantic",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P041",
+    "category": "Executive",
+    "userId": "U007",
+    "userRole": "Executive",
+    "userDepartment": "Executive Office",
+    "questionVi": "Ba trọng tâm kinh doanh năm 2026 là gì?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC038"
+    ],
+    "answerType": "Summary",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P042",
+    "category": "Executive",
+    "userId": "U004",
+    "userRole": "Employee",
+    "userDepartment": "Engineering",
+    "questionVi": "Ba trọng tâm kinh doanh năm 2026 là gì?",
+    "expected": "Deny",
+    "documentIds": [
+      "DOC038"
+    ],
+    "answerType": "Permission",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P043",
+    "category": "Product",
+    "userId": "U003",
+    "userRole": "Employee",
+    "userDepartment": "Product",
+    "questionVi": "Mỗi tính năng cần có gì trước khi phát triển?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC018"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P044",
+    "category": "Engineering",
+    "userId": "U012",
+    "userRole": "Employee",
+    "userDepartment": "Engineering",
+    "questionVi": "Có được commit secret vào repository không?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC022"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P045",
+    "category": "Company",
+    "userId": "U008",
+    "userRole": "Employee",
+    "userDepartment": "Company",
+    "questionVi": "Quà tặng từ đối tác trên 1 triệu cần làm gì?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC005"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P046",
+    "category": "HR",
+    "userId": "U001",
+    "userRole": "Employee",
+    "userDepartment": "Human Resources",
+    "questionVi": "Ngân sách đào tạo tối đa mỗi năm là bao nhiêu?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC009"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P047",
+    "category": "Finance",
+    "userId": "U010",
+    "userRole": "Employee",
+    "userDepartment": "Finance",
+    "questionVi": "Nhà cung cấp mới cần hồ sơ gì?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC013"
+    ],
+    "answerType": "Summary",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P048",
+    "category": "Legal",
+    "userId": "U014",
+    "userRole": "Director",
+    "userDepartment": "Legal & Compliance",
+    "questionVi": "Hồ sơ nhân sự được lưu trong bao lâu sau khi nghỉ việc?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC035"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Medium"
+  },
+  {
+    "questionId": "P049",
+    "category": "Operations",
+    "userId": "U013",
+    "userRole": "Employee",
+    "userDepartment": "Operations",
+    "questionVi": "Sự cố nghiêm trọng cần cập nhật trạng thái bao lâu một lần?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC028"
+    ],
+    "answerType": "Exact",
+    "difficulty": "Easy"
+  },
+  {
+    "questionId": "P050",
+    "category": "Product",
+    "userId": "U003",
+    "userRole": "Employee",
+    "userDepartment": "Product",
+    "questionVi": "Các chỉ số trọng tâm trong chiến lược sản phẩm là gì?",
+    "expected": "Allow",
+    "documentIds": [
+      "DOC016"
+    ],
+    "answerType": "Summary",
+    "difficulty": "Medium"
+  }
+] as const

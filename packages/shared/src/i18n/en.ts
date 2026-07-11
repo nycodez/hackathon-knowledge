@@ -21,7 +21,7 @@ export const en = {
   empty: 'Nothing here yet',
   retry: 'Retry',
   documentManagement: 'Document Management',
-  documentIntro: 'Database-owned sources with classification, department, subsidiary, and bilingual chunk metadata.',
+  documentIntro: 'Database-owned Vietnamese sources with classification, department, subsidiary, and permission-scoped chunk metadata.',
   allDepartments: 'All departments',
   all: 'All',
   backDocuments: 'Back to Documents',
