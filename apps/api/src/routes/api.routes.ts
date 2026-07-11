@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, type Request, type RequestHandler, type Response } from 'express'
 import multer from 'multer'
 import { z } from 'zod'
 import { query } from '../db/pool.js'
@@ -46,7 +46,7 @@ router.get('/health', async (_req, res) => {
   }
 })
 
-router.get('/dashboard', async (req, res) => {
+router.get('/dashboard', asyncRoute(async (req, res) => {
   const workspace = workspaceId(req)
   const result = await query<{
     documents: number
@@ -68,21 +68,21 @@ router.get('/dashboard', async (req, res) => {
     conversations: Number(row?.conversations ?? 0),
     messages: Number(row?.messages ?? 0),
   } })
-})
+}))
 
-router.get('/conversations', async (req, res) => {
+router.get('/conversations', asyncRoute(async (req, res) => {
   res.json({ success: true, data: await conversations.list(workspaceId(req)) })
-})
+}))
 
-router.get('/conversations/:id', async (req, res) => {
+router.get('/conversations/:id', asyncRoute(async (req, res) => {
   const parsed = idSchema.safeParse(req.params.id)
   if (!parsed.success) return res.status(400).json(validationError('id', 'A valid conversation ID is required'))
   const conversation = await conversations.get(workspaceId(req), parsed.data)
   if (!conversation) return res.status(404).json(notFound('conversation'))
   return res.json({ success: true, data: conversation })
-})
+}))
 
-router.post('/query', async (req, res) => {
+router.post('/query', asyncRoute(async (req, res) => {
   const parsed = askSchema.safeParse(req.body)
   if (!parsed.success) return res.status(400).json(validationError('message', parsed.error.issues[0]?.message ?? 'Invalid query'))
   try {
@@ -94,33 +94,39 @@ router.post('/query', async (req, res) => {
     }
     throw error
   }
-})
+}))
 
-router.get('/documents', async (req, res) => {
+router.get('/documents', asyncRoute(async (req, res) => {
   res.json({ success: true, data: await documents.list(workspaceId(req)) })
-})
+}))
 
-router.post('/documents', upload.single('file'), async (req, res) => {
+router.post('/documents', upload.single('file'), asyncRoute(async (req, res) => {
   if (!req.file) return res.status(400).json(validationError('file', 'Choose one file to upload'))
   const document = await documents.ingest(workspaceId(req), req.file)
   return res.status(202).json({ success: true, data: document })
-})
+}))
 
-router.post('/documents/:id/process', async (req, res) => {
+router.post('/documents/:id/process', asyncRoute(async (req, res) => {
   const parsed = idSchema.safeParse(req.params.id)
   if (!parsed.success) return res.status(400).json(validationError('id', 'A valid document ID is required'))
   const document = await ingestion.process(workspaceId(req), parsed.data)
   if (!document) return res.status(404).json(notFound('document'))
   return res.json({ success: true, data: document })
-})
+}))
 
-router.delete('/documents/:id', async (req, res) => {
+router.delete('/documents/:id', asyncRoute(async (req, res) => {
   const parsed = idSchema.safeParse(req.params.id)
   if (!parsed.success) return res.status(400).json(validationError('id', 'A valid document ID is required'))
   const removed = await documents.remove(workspaceId(req), parsed.data)
   if (!removed) return res.status(404).json(notFound('document'))
   return res.status(204).send()
-})
+}))
+
+function asyncRoute(handler: (req: Request, res: Response) => Promise<unknown>): RequestHandler {
+  return (req, res, next) => {
+    void handler(req, res).catch(next)
+  }
+}
 
 function validationError(field: string, message: string) {
   return { success: false, errors: [{ rule: 'validation', field, message }] }
@@ -131,4 +137,3 @@ function notFound(field: string) {
 }
 
 export default router
-

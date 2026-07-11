@@ -36,28 +36,17 @@ For a production-sized corpus, move raw objects to S3 or Vercel Blob, upload dir
 
 Prerequisites: Node.js 22+, pnpm 9, and Docker.
 
-```sh
-docker compose up -d
-cp apps/api/.env.example apps/api/.env
-```
-
-For the local container, set this value in `apps/api/.env`:
-
-```dotenv
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/hackathon
-PGSSLMODE=disable
-```
-
-Then install, migrate, and run both applications:
+Install dependencies, create the local environment file, start pgvector PostgreSQL, and migrate it:
 
 ```sh
 pnpm install
-pnpm db:migrate
+pnpm setup:local
 pnpm dev
 ```
 
 - Web: `http://localhost:4200`
 - API health: `http://localhost:3333/api/health`
+- PostgreSQL: `localhost:5433` (container port `5432`; host port `5433` avoids a common local PostgreSQL conflict)
 
 ## AWS RDS PostgreSQL 17
 
