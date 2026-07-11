@@ -50,6 +50,12 @@ async function seedTascoDemoData(client: PoolClient): Promise<Record<string, num
     [data.permissionCases.map((testCase) => testCase.id)]
   )
   await client.query(
+    `DELETE FROM tasco_threads
+     WHERE tenant_id = $1 AND identity_type = 'demo_persona'
+       AND NOT (user_id = ANY($2::varchar[]))`,
+    [tenantId, data.personas.map((persona) => persona.id)]
+  )
+  await client.query(
     `DELETE FROM tasco_demo_personas WHERE tenant_id = $1 AND NOT (id = ANY($2::varchar[]))`,
     [tenantId, data.personas.map((persona) => persona.id)]
   )
@@ -66,6 +72,15 @@ async function seedTascoDemoData(client: PoolClient): Promise<Record<string, num
      WHERE tenant_id = $1 AND source_type = 'workspace_document'
        AND NOT (source_record_id = ANY($2::varchar[]))`,
     [tenantId, data.documents.map((document) => document.id)]
+  )
+  await client.query(
+    `DELETE FROM kg_nodes
+     WHERE tenant_id = $1 AND NOT (subsidiary_id = ANY($2::varchar[]))`,
+    [tenantId, data.subsidiaries.map((subsidiary) => subsidiary.id)]
+  )
+  await client.query(
+    `DELETE FROM tasco_subsidiaries WHERE NOT (id = ANY($1::varchar[]))`,
+    [data.subsidiaries.map((subsidiary) => subsidiary.id)]
   )
 
   for (const subsidiary of data.subsidiaries) {
@@ -322,7 +337,7 @@ async function upsertKnowledgeSource(
         owner: workbookDocument?.owner ?? document.department,
         allowedAccess: workbookDocument?.allowedAccess ?? 'All Employees',
         lastUpdated: workbookDocument?.lastUpdated ?? null,
-        tags: workbookDocument?.tags ?? ['property-management', 'accounting', document.provenance ?? 'curated-demo'],
+        tags: workbookDocument?.tags ?? ['automotive-distribution', 'accounting', document.provenance ?? 'curated-demo'],
         language: workbookDocument?.language ?? 'vi',
         workbookWordCount: workbookDocument?.wordCount ?? null,
         ingestionProvider: workbookDocument ? 'sponsor-workbook' : document.ingestionProvider ?? 'curated',

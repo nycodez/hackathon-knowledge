@@ -26,7 +26,7 @@ import { ApiService, type KnowledgeEvalRun } from '../core/api.service'
       } @else if (report(); as result) {
         <div class="metric-grid evaluation-metrics">
           <article class="metric-card"><span>Public evaluation</span><strong>{{ result.score }}/{{ result.total }}</strong><small>48/{{ result.total }} minimum gate</small></article>
-          <article class="metric-card"><span>Permission cases</span><strong>{{ passedCases(result) }}/{{ result.caseResults.length }}</strong><small>Sponsor + property-management cases</small></article>
+          <article class="metric-card"><span>Permission cases</span><strong>{{ passedCases(result) }}/{{ result.caseResults.length }}</strong><small>Sponsor + automotive-distribution cases</small></article>
           <article class="metric-card"><span>Unauthorized leaks</span><strong>{{ result.leaks }}</strong><small>Chunks and citations</small></article>
           <article class="metric-card"><span>Restricted context</span><strong>{{ result.metrics?.restrictedContextHits ?? 0 }}</strong><small>Model-context hits</small></article>
         </div>
@@ -42,7 +42,7 @@ import { ApiService, type KnowledgeEvalRun } from '../core/api.service'
 
         <article class="scope-card evaluation-card">
           <div class="section-heading">
-            <div><span class="eyebrow">Required deliverable · rendered in app</span><h2>Property-management example Q&amp;A</h2></div>
+            <div><span class="eyebrow">Required deliverable · rendered in app</span><h2>Automotive-distribution example Q&amp;A</h2></div>
             <span class="status-chip neutral">{{ examples().length }} grounded answers</span>
           </div>
           <div class="example-qa-grid">
@@ -132,8 +132,9 @@ export class EvaluationPage implements OnInit {
       finalize(() => this.loading.set(false))
     ).subscribe({
       next: ({ report, latest, examples }) => {
-        this.latest.set(latest)
-        this.report.set(latest?.report ?? report)
+        const currentLatest = latest?.report?.caseResults.some((item) => item.id.startsWith('AUT')) ? latest : null
+        this.latest.set(currentLatest)
+        this.report.set(report)
         this.examples.set(examples)
       },
       error: (error: unknown) => this.error.set(this.api.message(error)),

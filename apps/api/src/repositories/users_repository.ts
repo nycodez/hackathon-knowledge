@@ -29,7 +29,7 @@ function toUser(row: UserRow): TascoUser {
     identityType: row.identity_type,
     displayDepartment: row.display_department ?? undefined,
     businessUnitId: row.business_unit_id ?? undefined,
-    businessUnitName: row.business_unit_id === 'TASCO-PROPERTY-DEMO' ? 'Tasco Property Management' : undefined,
+    businessUnitName: row.business_unit_id === 'TASCO-AUTO-DISTRIBUTION-DEMO' ? 'Tasco Automotive Distribution' : undefined,
     provenance: row.provenance ?? undefined,
   }
 }

@@ -1,12 +1,12 @@
 # Hackathon Knowledge
 
-A minimal enterprise-knowledge proof of concept for a Tasco employee in **Accounting within property management**. The product experience is deliberately limited to Home, Ask, and Evidence: get a grounded answer fast, compare correctly scoped depth by role, prove a Restricted source is invisible, and resume sticky per-user history.
+A minimal enterprise-knowledge proof of concept for a Tasco employee in **Accounting within automotive distribution**. The product experience is deliberately limited to Home, Ask, and Evidence: get a grounded answer fast, compare correctly scoped depth by role, prove a Restricted source is invisible, and resume sticky per-user history.
 
 ## Customization boundary
 
 The generic framework APIs remain compatible, but extra starter modules are removed from the primary product navigation:
 
-- **Home** explains the property-management Accounting story and role/department matrix.
+- **Home** explains the automotive-distribution Accounting story and role/department matrix.
 - **Ask** runs the grounded answer, same-question Employee/Executive proof, zero-leak refusal, and sticky identity history.
 - **Evidence** renders 13 example Q&As, 15 permission cases, and all 50 sponsor evaluation rows.
 
@@ -22,7 +22,7 @@ The generic framework behavior remains available, while `/api/v1/workspace/*` ow
 - PostgreSQL migrations with workspace scoping, full-text search, `vector(1024)`, and HNSW indexing
 - Dependency-free feature-hash embeddings, so retrieval works before an external embedding provider is added
 - Optional Claude OCR for scanned PDFs and images
-- The real 32 sponsor Users-sheet identities, kept separate from 32 property-management demo personas (four roles × eight departments)
+- The real 32 sponsor Users-sheet identities, kept separate from 32 automotive-distribution demo personas (four roles × eight departments)
 - Evaluation identity resolved by joining to the canonical Users table; the 18 mismatched role snapshots remain evidence, never authority
 - Strict Departments-sheet normalization in English and Vietnamese; unknown departments fail closed
 - Permission-aware SQL pre-filtering before lexical or vector ranking
@@ -53,7 +53,7 @@ The starter deliberately keeps the first deployment small:
 
 For enterprise-knowledge queries, the API resolves the supplied demo user ID against the server-owned user table. Subsidiary, classification, role, and department predicates run in SQL before lexical or vector ranking. Only authorized chunks can enter deterministic answer construction or optional model context.
 
-The 40 sponsor knowledge sources preserve the Vietnamese `content_vi` and metadata from `ai_workspace_dataset_vietnamese_participants.xlsm`. They are supplemented by 15 clearly labelled property-management sources. Five of those sources carry reviewed official Vietnam context URLs for accounting, e-invoices, housing, and apartment management. The configured provenance path is Apify Website Content Crawler; `apifyRunVerified` remains `false` until a real `APIFY_TOKEN` run is performed, so seed metadata never fabricates crawl evidence.
+The 40 sponsor knowledge sources preserve the Vietnamese `content_vi` and metadata from `ai_workspace_dataset_vietnamese_participants.xlsm`. They are supplemented by 15 clearly labelled automotive-distribution sources. Four of those sources carry reviewed official Vietnam context URLs for enterprise accounting and e-invoices. The configured provenance path is Apify Website Content Crawler; `apifyRunVerified` remains `false` until a real `APIFY_TOKEN` run is performed, so seed metadata never fabricates crawl evidence.
 
 The COP headers, staff entities, organization tree, success envelope, and request IDs mirror the supplied **My Tasco API documentation**. The pitch can therefore state that the PoC is shaped as a deployable My Tasco workspace integration, while the current authentication tokens remain deterministic demo tokens.
 
@@ -145,10 +145,10 @@ Run migrations before opening the deployed application. Migrations are intention
 | `GET` | `/api/v1/workspace/ask?userId=…` | Sticky thread summaries for the resolved identity |
 | `GET` | `/api/v1/workspace/ask/:threadId` | Resume one identity-owned thread |
 | `POST` | `/api/v1/workspace/ask/by-role` | Compare the same question across canonical personas |
-| `GET` | `/api/v1/workspace/examples` | Rendered property-management example Q&A deliverable |
+| `GET` | `/api/v1/workspace/examples` | Rendered automotive-distribution example Q&A deliverable |
 | `GET` | `/api/v1/workspace/documents/:id` | Authorized source detail or denial evidence |
 | `GET` | `/api/v1/workspace/search` | Permission-prefiltered hybrid retrieval |
-| `POST` | `/api/v1/workspace/permission-test` | Run sponsor and property-management permission cases |
+| `POST` | `/api/v1/workspace/permission-test` | Run sponsor and automotive-distribution permission cases |
 | `GET/POST` | `/api/v1/workspace/eval` | Run and optionally persist the 50-row evaluation |
 | `GET` | `/api/v1/workspace/retrieval-trace` | Replay append-only audit evidence |
 | `POST` | `/mytasco/v1/staff/search` | COP-compatible deterministic staff directory search |
@@ -173,13 +173,13 @@ pnpm build
 pnpm verify:knowledge
 ```
 
-The knowledge verification checks all 40 workbook-backed Vietnamese sources, the 15 property-management sources, exact leave-policy content, SQL-level Restricted denial, subsidiary isolation, the same-question Employee/Executive flow, 50/50 Public_Evaluation, 15/15 permission cases, zero permission leaks, zero Restricted context hits, and persisted audit evidence.
+The knowledge verification checks all 40 workbook-backed Vietnamese sources, the 15 automotive-distribution sources, exact leave-policy content, SQL-level Restricted denial, subsidiary isolation, the same-question Employee/Executive flow, 50/50 Public_Evaluation, 15/15 permission cases, zero permission leaks, zero Restricted context hits, and persisted audit evidence.
 
 ## 60-second demo
 
-1. Start as **Accounting · Employee** and ask: “What is the property month-end close sequence?” Show the grounded answer and authorized citation.
-2. Ask: “How is the property portfolio performing this month?” Show the Accounting-scoped result, then switch to **Executive** and show the deeper, correctly authorized result.
-3. Switch back to **Employee** and ask: “What property acquisition or M&A targets are under review?” Show the refusal and proof: zero authorized chunks, zero Restricted model context, and no source metadata.
+1. Start as **Accounting · Employee** and ask: “What is the dealer network month-end close sequence?” Show the grounded answer and authorized citation.
+2. Ask: “How is the automotive distribution network performing this month?” Show the Accounting-scoped result, then switch to **Executive** and show the deeper, correctly authorized result.
+3. Switch back to **Employee** and ask: “Which dealer acquisition or M&A targets are under review?” Show the refusal and proof: zero authorized chunks, zero Restricted model context, and no source metadata.
 4. Switch identities once more to show each persona’s sticky history is distinct. Close on **Evidence** with 13 Q&As, 15 permission cases, and 50/50 sponsor evaluation.
 
 ## Where to customize

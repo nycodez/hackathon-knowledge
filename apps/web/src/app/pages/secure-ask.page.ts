@@ -12,7 +12,7 @@ import { ApiService, type KnowledgeByRoleAskResponse } from '../core/api.service
     <section class="page customization-page secure-ask-page">
       <header class="page-header compact-header">
         <div>
-          <span class="eyebrow">Accounting · Property management</span>
+          <span class="eyebrow">Accounting · Automotive distribution</span>
           <h1>Permission-safe Ask</h1>
           <p>Identity is resolved from PostgreSQL, department names are canonicalized, and unauthorized chunks are removed in SQL before ranking or generation.</p>
         </div>
@@ -66,8 +66,8 @@ import { ApiService, type KnowledgeByRoleAskResponse } from '../core/api.service
               @if (!response() && !history()) {
                 <div class="secure-empty">
                   <span class="chat-orb">✦</span>
-                  <h2>Ask a property-accounting question</h2>
-                  <p>Use the portfolio question to compare role-scoped depth, then prove that the M&A source is invisible to an Employee.</p>
+                  <h2>Ask an automotive-distribution accounting question</h2>
+                  <p>Use the network-performance question to compare role-scoped depth, then prove that the dealer M&A source is invisible to an Employee.</p>
                   <div class="suggestion-list">
                     @for (question of suggestedQuestions(); track question.questionEn) {
                       <button type="button" (click)="useQuestion(question)">{{ questionText(question) }}</button>
@@ -92,7 +92,7 @@ import { ApiService, type KnowledgeByRoleAskResponse } from '../core/api.service
             </div>
 
             <form class="secure-composer" (submit)="submit(); $event.preventDefault()">
-              <textarea [formControl]="questionControl" rows="2" placeholder="Ask the property-management knowledge base…" aria-label="Enterprise question"></textarea>
+              <textarea [formControl]="questionControl" rows="2" placeholder="Ask the automotive-distribution knowledge base…" aria-label="Enterprise question"></textarea>
               <button class="button primary" type="submit" [disabled]="questionControl.invalid || sending()">{{ sending() ? 'Checking policy…' : 'Ask securely' }}</button>
             </form>
           </section>
@@ -155,11 +155,11 @@ export class SecureAskPage implements OnInit {
   protected readonly error = signal('')
   protected readonly lastQuestion = signal('')
   protected readonly questionControl = new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(2000)] })
-  protected readonly selectedUserId = computed(() => `PM-${this.selectedDepartment()}-${this.selectedRole() === 'Employee' ? 'EMP' : this.selectedRole() === 'Manager' ? 'MGR' : this.selectedRole() === 'Director' ? 'DIR' : 'EXEC'}`)
+  protected readonly selectedUserId = computed(() => `AUTO-${this.selectedDepartment()}-${this.selectedRole() === 'Employee' ? 'EMP' : this.selectedRole() === 'Manager' ? 'MGR' : this.selectedRole() === 'Director' ? 'DIR' : 'EXEC'}`)
   protected readonly activeUser = computed(() => this.world()?.personas.find((user) => user.id === this.selectedUserId()) ?? null)
   protected readonly suggestedQuestions = computed(() => {
     const questions = this.world()?.questions ?? []
-    const wanted = ['What is the property month-end close sequence?', 'How is the property portfolio performing this month?', 'What property acquisition or M&A targets are under review?']
+    const wanted = ['What is the dealer network month-end close sequence?', 'How is the automotive distribution network performing this month?', 'Which dealer acquisition or M&A targets are under review?']
     return wanted.flatMap((text) => questions.find((question) => question.questionEn === text) ?? [])
   })
 

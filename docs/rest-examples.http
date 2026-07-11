@@ -23,33 +23,33 @@ X-App-Code: {{appCode}}
 ### Permission-aware knowledge search
 GET {{baseUrl}}/api/v1/workspace/search?userId=U001&q=khung%20lương&language=vi
 
-### Grounded property-accounting answer (Employee)
+### Grounded automotive-distribution accounting answer (Employee)
 POST {{baseUrl}}/api/v1/workspace/ask
 Content-Type: application/json
 
 {
-  "userId": "PM-FIN-EMP",
-  "question": "What is the property month-end close sequence?",
+  "userId": "AUTO-FIN-EMP",
+  "question": "What is the dealer network month-end close sequence?",
   "language": "en"
 }
 
-### Same portfolio question (Employee accounting view)
+### Same network question (Employee accounting view)
 POST {{baseUrl}}/api/v1/workspace/ask
 Content-Type: application/json
 
 {
-  "userId": "PM-FIN-EMP",
-  "question": "How is the property portfolio performing this month?",
+  "userId": "AUTO-FIN-EMP",
+  "question": "How is the automotive distribution network performing this month?",
   "language": "en"
 }
 
-### Same portfolio question (Executive view)
+### Same network question (Executive view)
 POST {{baseUrl}}/api/v1/workspace/ask
 Content-Type: application/json
 
 {
-  "userId": "PM-FIN-EXEC",
-  "question": "How is the property portfolio performing this month?",
+  "userId": "AUTO-FIN-EXEC",
+  "question": "How is the automotive distribution network performing this month?",
   "language": "en"
 }
 
@@ -58,13 +58,13 @@ POST {{baseUrl}}/api/v1/workspace/ask
 Content-Type: application/json
 
 {
-  "userId": "PM-FIN-EMP",
-  "question": "What property acquisition or M&A targets are under review?",
+  "userId": "AUTO-FIN-EMP",
+  "question": "Which dealer acquisition or M&A targets are under review?",
   "language": "en"
 }
 
 ### Sticky history for the Accounting Employee
-GET {{baseUrl}}/api/v1/workspace/ask?userId=PM-FIN-EMP
+GET {{baseUrl}}/api/v1/workspace/ask?userId=AUTO-FIN-EMP
 
 ### Rendered example Q&A deliverable
 GET {{baseUrl}}/api/v1/workspace/examples

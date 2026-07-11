@@ -37,7 +37,7 @@ export default class ThreadRepository {
         await client.query(
           `INSERT INTO tasco_threads (id, tenant_id, user_id, identity_type, language, title)
            VALUES ($1, $2, $3, $4, $5, $6)`,
-          [threadId, 'tasco-demo', input.userId, input.userId.startsWith('PM-') ? 'demo_persona' : 'sponsor_user', input.language, input.question.slice(0, 255)]
+          [threadId, 'tasco-demo', input.userId, input.userId.startsWith('AUTO-') ? 'demo_persona' : 'sponsor_user', input.language, input.question.slice(0, 255)]
         )
       }
 

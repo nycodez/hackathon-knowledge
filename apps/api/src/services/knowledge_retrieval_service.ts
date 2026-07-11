@@ -112,7 +112,7 @@ export default class KnowledgeRetrievalService {
     language: 'en' | 'vi' = 'en'
   ): Promise<TascoByRoleAskResult> {
     const selectedDepartment = data.personas.find((persona) => persona.id === _requestedUserIds?.[0])?.department ?? 'FIN'
-    const uniqueUserIds = [`PM-${selectedDepartment}-EMP`, `PM-${selectedDepartment}-EXEC`]
+    const uniqueUserIds = [`AUTO-${selectedDepartment}-EMP`, `AUTO-${selectedDepartment}-EXEC`]
     const results = await Promise.all(
       uniqueUserIds.map(async (userId) => {
         await this.assertUserScope(userId, data)
@@ -300,9 +300,9 @@ export default class KnowledgeRetrievalService {
     const matches = data.questions.filter((question) =>
       normalizeQuestion(question.questionEn) === normalized || normalizeQuestion(question.questionVi) === normalized
     )
-    if (normalized === normalizeQuestion('How is the property portfolio performing this month?') ||
-        normalized === normalizeQuestion('Danh mục bất động sản tháng này hoạt động thế nào?')) {
-      return matches.find((question) => question.documentId === (principal.role === 'Executive' ? 'PM-EXEC-002' : 'PM-DIR-001'))
+    if (normalized === normalizeQuestion('How is the automotive distribution network performing this month?') ||
+        normalized === normalizeQuestion('Mạng lưới phân phối ô tô tháng này hoạt động thế nào?')) {
+      return matches.find((question) => question.documentId === (principal.role === 'Executive' ? 'AUTO-EXEC-002' : 'AUTO-DIR-001'))
     }
     return matches[0]
   }

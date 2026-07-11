@@ -78,16 +78,16 @@ try {
   expect(permissionCases.data?.length === 15, `expected 15 permission cases, got ${permissionCases.data?.length ?? 0}`)
   expect(permissionCases.data?.every((result) => result.passed) === true, 'one or more permission cases failed')
 
-  const question = 'How is the property portfolio performing this month?'
-  const employee = await ask('PM-FIN-EMP', question)
-  const executive = await ask('PM-FIN-EXEC', question)
+  const question = 'How is the automotive distribution network performing this month?'
+  const employee = await ask('AUTO-FIN-EMP', question)
+  const executive = await ask('AUTO-FIN-EXEC', question)
   expect(employee.state === 'answered', `employee accounting ask state was ${employee.state}`)
-  expect(employee.citation?.sourceId === 'PM-DIR-001', 'employee answer was not grounded in the Accounting view')
+  expect(employee.citation?.sourceId === 'AUTO-DIR-001', 'employee answer was not grounded in the Accounting view')
   expect(executive.state === 'answered', `executive ask state was ${executive.state}`)
   expect(executive.trace.decision === 'allow', `executive ask decision was ${executive.trace.decision}`)
-  expect(executive.citation?.sourceId === 'PM-EXEC-002', 'executive answer was not grounded in the Restricted executive view')
+  expect(executive.citation?.sourceId === 'AUTO-EXEC-002', 'executive answer was not grounded in the Restricted executive view')
 
-  const deniedMna = await ask('PM-FIN-EMP', 'What property acquisition or M&A targets are under review?')
+  const deniedMna = await ask('AUTO-FIN-EMP', 'Which dealer acquisition or M&A targets are under review?')
   expect(deniedMna.state === 'permission_refusal', 'Employee M&A request was not denied')
   expect(deniedMna.trace.document === undefined && deniedMna.question.documentId === 'REDACTED', 'denial disclosed protected source metadata')
   expect(deniedMna.trace.proof.authorizedChunks === 0 && deniedMna.trace.proof.restrictedContextSentToModel === 0, 'denial proof was not zero-context')
@@ -102,15 +102,15 @@ try {
   )
   expect(executiveSearch.data?.results.some((result) => result.document.id === 'DOC036') === true, 'executive search could not retrieve DOC036')
 
-  const employeeDetail = await fetch(`${baseUrl}/api/v1/workspace/documents/PM-EXEC-001?userId=PM-FIN-EMP&language=en`)
+  const employeeDetail = await fetch(`${baseUrl}/api/v1/workspace/documents/AUTO-EXEC-001?userId=AUTO-FIN-EMP&language=en`)
   expect(employeeDetail.status === 404, `protected document detail returned ${employeeDetail.status} instead of 404`)
 
   const crossSubsidiary = await request<ApiEnvelope<TascoSearchResponse>>(
     '/api/v1/workspace/search?userId=U001&q=probation%20policy&language=en'
   )
   expect(crossSubsidiary.data?.results.every((result) => result.document.subsidiaryId === 'DNP-WATER') === true, 'cross-subsidiary search result leaked')
-  expect(crossSubsidiary.data?.results.every((result) => result.document.id !== 'ACC-PM-001') === true, 'property-management document crossed the subsidiary boundary')
-  const foreignDetail = await fetch(`${baseUrl}/api/v1/workspace/documents/ACC-PM-001?userId=U001&language=en`)
+  expect(crossSubsidiary.data?.results.every((result) => result.document.id !== 'ACC-AUTO-001') === true, 'automotive-distribution document crossed the subsidiary boundary')
+  const foreignDetail = await fetch(`${baseUrl}/api/v1/workspace/documents/ACC-AUTO-001?userId=U001&language=en`)
   expect(foreignDetail.status === 404, `cross-subsidiary document detail returned ${foreignDetail.status} instead of 404`)
 
   const evaluation = await request<ApiEnvelope<TascoEvalReport>>('/api/v1/workspace/eval')
@@ -123,10 +123,10 @@ try {
   expect(persistedEvaluation.data?.score === 50 && persistedEvaluation.data.leaks === 0, 'persisted evaluation gate failed')
 
   const trace = await request<ApiEnvelope<TascoRetrievalTraceReplayResponse>>(
-    '/api/v1/workspace/retrieval-trace?userId=PM-FIN-EMP&documentId=PM-EXEC-001&eventType=permission_denied&limit=25'
+    '/api/v1/workspace/retrieval-trace?userId=AUTO-FIN-EMP&documentId=AUTO-EXEC-001&eventType=permission_denied&limit=25'
   )
   expect((trace.data?.summary.events ?? 0) > 0, 'no persisted denial audit evidence was returned')
-  expect(trace.data?.events.every((event) => event.actorUserId === 'PM-FIN-EMP') === true, 'audit replay crossed the actor filter')
+  expect(trace.data?.events.every((event) => event.actorUserId === 'AUTO-FIN-EMP') === true, 'audit replay crossed the actor filter')
   expect(trace.data?.events.every((event) => event.metadata.citationChunkId == null) === true, 'denial audit contained a protected citation chunk')
 } finally {
   await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()))

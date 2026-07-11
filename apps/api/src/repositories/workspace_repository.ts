@@ -78,7 +78,7 @@ export default class WorkspaceRepository {
       documents,
       questions,
       subsidiaries,
-      personaIds: ['PM-FIN-EMP', 'PM-FIN-EXEC'],
+      personaIds: ['AUTO-FIN-EMP', 'AUTO-FIN-EXEC'],
       permissionCases,
       publicEvaluation,
     }

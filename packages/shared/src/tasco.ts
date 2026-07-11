@@ -1,11 +1,11 @@
 import { WORKBOOK_PUBLIC_EVALUATION, WORKBOOK_USERS } from './tasco_workbook.js'
 import {
-  createPropertyManagementPersonas,
-  PROPERTY_MANAGEMENT_BUSINESS_UNIT,
-  PROPERTY_MANAGEMENT_DOCUMENTS,
-  PROPERTY_MANAGEMENT_PERMISSION_CASES,
-  PROPERTY_MANAGEMENT_QUESTIONS,
-} from './property_management.js'
+  AUTOMOTIVE_DISTRIBUTION_BUSINESS_UNIT,
+  AUTOMOTIVE_DISTRIBUTION_DOCUMENTS,
+  AUTOMOTIVE_DISTRIBUTION_PERMISSION_CASES,
+  AUTOMOTIVE_DISTRIBUTION_QUESTIONS,
+  createAutomotiveDistributionPersonas,
+} from './automotive_distribution.js'
 
 export const TRACK_CODE = 'tasco' as const
 export const TRACK_TITLE = 'Tasco Enterprise Knowledge' as const
@@ -468,24 +468,24 @@ export function createTascoDemoData(): TascoSeedData {
     identityType: 'sponsor_user',
     provenance: 'Users sheet canonical identity',
   }))
-  const personas = createPropertyManagementPersonas(departments)
+  const personas = createAutomotiveDistributionPersonas(departments)
 
   return {
     departments,
     users,
     personas,
-    documents: [...documents.map((document) => ({ ...document, provenance: 'sponsor-workbook' as const })), ...PROPERTY_MANAGEMENT_DOCUMENTS],
-    questions: [...questions, ...PROPERTY_MANAGEMENT_QUESTIONS],
+    documents: [...documents.map((document) => ({ ...document, provenance: 'sponsor-workbook' as const })), ...AUTOMOTIVE_DISTRIBUTION_DOCUMENTS],
+    questions: [...questions, ...AUTOMOTIVE_DISTRIBUTION_QUESTIONS],
     subsidiaries,
-    personaIds: ['PM-FIN-EMP', 'PM-FIN-EXEC'],
-    permissionCases: [...permissionCases.filter((testCase) => testCase.id !== 'T8'), ...PROPERTY_MANAGEMENT_PERMISSION_CASES],
+    personaIds: ['AUTO-FIN-EMP', 'AUTO-FIN-EXEC'],
+    permissionCases: [...permissionCases.filter((testCase) => testCase.id !== 'T8'), ...AUTOMOTIVE_DISTRIBUTION_PERMISSION_CASES],
     publicEvaluation,
   }
 }
 
 const subsidiaries: TascoSubsidiary[] = [
   { id: 'DNP-WATER', name: 'DNP Water', metaEn: '40 documents · 32 users · seed dataset', metaVi: '40 tài liệu · 32 người dùng · dữ liệu gốc' },
-  { id: PROPERTY_MANAGEMENT_BUSINESS_UNIT.id, name: PROPERTY_MANAGEMENT_BUSINESS_UNIT.name, metaEn: 'Property-management Accounting demo · 32 role/department personas', metaVi: 'Demo Kế toán quản lý bất động sản · 32 persona theo vai trò/phòng ban' },
+  { id: AUTOMOTIVE_DISTRIBUTION_BUSINESS_UNIT.id, name: AUTOMOTIVE_DISTRIBUTION_BUSINESS_UNIT.name, metaEn: 'Automotive-distribution Accounting demo · 32 role/department personas', metaVi: 'Demo Kế toán phân phối ô tô · 32 persona theo vai trò/phòng ban' },
 ]
 
 const questions: TascoQuestion[] = [
@@ -667,7 +667,7 @@ export function answerQuestion(userId: string, questionText: string, data = crea
   const exactMatches = data.questions.filter((candidate) => candidate.questionEn.toLowerCase() === normalized || candidate.questionVi.toLowerCase() === normalized)
   const question =
     (exactMatches.length > 1
-      ? exactMatches.find((candidate) => candidate.documentId === (user.role === 'Executive' ? 'PM-EXEC-002' : 'PM-DIR-001'))
+      ? exactMatches.find((candidate) => candidate.documentId === (user.role === 'Executive' ? 'AUTO-EXEC-002' : 'AUTO-DIR-001'))
       : exactMatches[0]) ??
     data.questions.find((candidate) => candidate.questionEn.toLowerCase().includes(normalized) || candidate.questionVi.toLowerCase().includes(normalized)) ??
     data.questions[0]

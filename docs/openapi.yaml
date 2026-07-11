@@ -74,7 +74,7 @@ paths:
     get:
       summary: Search only knowledge chunks authorized for the selected demo identity
       parameters:
-        - { name: userId, in: query, required: true, schema: { type: string, pattern: '^(U[0-9]{3}|PM-(COMP|HR|FIN|PROD|ENG|OPS|LEGAL|EXEC)-(EMP|MGR|DIR|EXEC))$' } }
+        - { name: userId, in: query, required: true, schema: { type: string, pattern: '^(U[0-9]{3}|AUTO-(COMP|HR|FIN|PROD|ENG|OPS|LEGAL|EXEC)-(EMP|MGR|DIR|EXEC))$' } }
         - { name: q, in: query, required: true, schema: { type: string } }
         - { name: language, in: query, schema: { type: string, enum: [en, vi] } }
       responses:
@@ -111,7 +111,7 @@ paths:
         '200': { description: Two independently permission-filtered answers }
   /api/v1/workspace/examples:
     get:
-      summary: Return the rendered property-management example Q&A deliverable
+      summary: Return the rendered automotive-distribution example Q&A deliverable
       responses:
         '200': { description: At least 10 grounded non-Restricted examples }
 components:

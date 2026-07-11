@@ -14,9 +14,9 @@ const classifications: TascoClassification[] = ['Public', 'Internal', 'Confident
     <section class="page page-home customization-page">
       <header class="page-header hero-header">
         <div>
-          <span class="eyebrow">My Tasco · Property Management Accounting</span>
+          <span class="eyebrow">My Tasco · Automotive Distribution Accounting</span>
           <h1>The right accounting answer for the person asking.</h1>
-          <p>Real sponsor identities and evaluation data meet a focused property-management demo: fast grounded answers, department-aware depth, sticky memory, and provably invisible Restricted knowledge.</p>
+          <p>Real sponsor identities and evaluation data meet a focused automotive-distribution demo: fast grounded answers, department-aware depth, sticky memory, and provably invisible Restricted knowledge.</p>
         </div>
         <a class="button primary" routerLink="/secure-ask">Try Secure Ask <span aria-hidden="true">→</span></a>
       </header>
@@ -39,10 +39,10 @@ const classifications: TascoClassification[] = ['Public', 'Internal', 'Confident
               <div><span class="eyebrow">Permission boundary</span><h2>Same question, different authorization</h2></div>
               <span class="status-chip neutral">SQL pre-filter</span>
             </div>
-            <p>Ask how the property portfolio is performing and compare the Accounting Employee view with the deeper Executive view—both grounded in only the sources each identity may retrieve.</p>
+            <p>Ask how the dealer network is performing and compare the Accounting Employee view with the deeper Executive view—both grounded in only the sources each identity may retrieve.</p>
             <div class="outcome-pair">
-              <div><span class="status-chip neutral">Employee</span><strong>Accounting view</strong><small>Collections, controllable cost, and arrears</small></div>
-              <div><span class="status-chip allowed">Executive</span><strong>Deeper portfolio view</strong><small>Authorized Restricted context and citation</small></div>
+              <div><span class="status-chip neutral">Employee</span><strong>Accounting view</strong><small>Vehicle deliveries, collections, margin, and dealer receivables</small></div>
+              <div><span class="status-chip allowed">Executive</span><strong>Deeper network view</strong><small>Authorized Restricted context and citation</small></div>
             </div>
             <a class="button primary widget-action" routerLink="/secure-ask">Run the comparison</a>
           </article>
@@ -80,7 +80,7 @@ const classifications: TascoClassification[] = ['Public', 'Internal', 'Confident
 
         <article class="scope-card table-card department-directory">
           <div class="section-heading">
-            <div><span class="eyebrow">Demo identity matrix</span><h2>Property-management roles by department</h2></div>
+            <div><span class="eyebrow">Demo identity matrix</span><h2>Automotive-distribution roles by department</h2></div>
             <span class="status-chip neutral">{{ departmentRoster().length }} departments · {{ world()?.personas?.length ?? 0 }} personas</span>
           </div>
           <div class="table-scroll">
@@ -171,7 +171,7 @@ export class HomePage implements OnInit {
       next: ({ meta, world, latest }) => {
         this.meta.set(meta)
         this.world.set(world)
-        this.latest.set(latest)
+        this.latest.set(latest?.report?.caseResults.some((item) => item.id.startsWith('AUT')) ? latest : null)
       },
       error: (error: unknown) => this.error.set(this.api.message(error)),
     })

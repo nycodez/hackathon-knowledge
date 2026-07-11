@@ -92,7 +92,7 @@ router.get('/workspace/personas', asyncRoute(async (_req, res) => {
 router.get('/workspace/examples', asyncRoute(async (_req, res) => {
   const data = await workspace.load()
   const examples: TascoExampleQa[] = data.questions
-    .filter((question) => question.documentId.startsWith('PM-') || question.documentId.startsWith('ACC-PM-'))
+    .filter((question) => question.documentId.startsWith('AUTO-') || question.documentId.startsWith('ACC-AUTO-'))
     .flatMap((question) => {
       const document = data.documents.find((candidate) => candidate.id === question.documentId)
       if (!document || document.classification === 'Restricted') return []

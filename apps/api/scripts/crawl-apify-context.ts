@@ -1,10 +1,10 @@
 import 'dotenv/config'
-import { PROPERTY_MANAGEMENT_DOCUMENTS } from '../../../packages/shared/src/property_management.js'
+import { AUTOMOTIVE_DISTRIBUTION_DOCUMENTS } from '../../../packages/shared/src/automotive_distribution.js'
 
 const token = process.env.APIFY_TOKEN
 if (!token) throw new Error('APIFY_TOKEN is required; no crawl was started and no provenance was claimed')
 
-const urls = [...new Set(PROPERTY_MANAGEMENT_DOCUMENTS.flatMap((document) => document.sourceUrls ?? []))]
+const urls = [...new Set(AUTOMOTIVE_DISTRIBUTION_DOCUMENTS.flatMap((document) => document.sourceUrls ?? []))]
 const actor = 'apify~website-content-crawler'
 const runResponse = await fetch(`https://api.apify.com/v2/acts/${actor}/runs?token=${encodeURIComponent(token)}&waitForFinish=120`, {
   method: 'POST',

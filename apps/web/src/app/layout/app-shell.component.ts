@@ -27,7 +27,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
 
         <div class="sidebar-foot">
           <span class="status-dot"></span>
-          <span><strong>Property Accounting</strong><small>Neon + pgvector</small></span>
+          <span><strong>Automotive Accounting</strong><small>Neon + pgvector</small></span>
         </div>
       </aside>
 
