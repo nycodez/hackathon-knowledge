@@ -35,7 +35,7 @@ import { ApiService } from '../core/api.service'
       <div class="workflow-card">
         <div class="section-heading">
           <div><span class="eyebrow">Learning library</span><h2>From file to grounded answer</h2></div>
-          <a routerLink="/files">Manage files</a>
+          <a routerLink="/library">Manage library</a>
         </div>
         <ol class="pipeline-list">
           <li><span>01</span><div><strong>Ingest</strong><small>Accept the original file and record its checksum.</small></div></li>
@@ -69,4 +69,3 @@ export class HomePage implements OnInit {
     })
   }
 }
-

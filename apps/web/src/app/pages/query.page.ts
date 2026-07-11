@@ -62,7 +62,7 @@ import { ApiService } from '../core/api.service'
       <form class="composer" (ngSubmit)="submit()">
         <textarea [formControl]="messageControl" rows="1" placeholder="Ask your documents…" aria-label="Message" (keydown)="handleKeydown($event)"></textarea>
         <button class="send-button" type="submit" [disabled]="messageControl.invalid || sending()" aria-label="Send message">↑</button>
-        <small>Grounded in ready files · Ctrl/⌘ + Enter to send</small>
+        <small>Grounded in the library · Ctrl/⌘ + Enter to send</small>
       </form>
 
       <div class="decision-console" role="log" aria-live="polite" data-readonly="true" aria-label="Decision console">

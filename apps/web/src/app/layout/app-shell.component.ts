@@ -23,8 +23,8 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
           <a routerLink="/results" routerLinkActive="active">
             <span aria-hidden="true">◫</span> Results
           </a>
-          <a routerLink="/files" routerLinkActive="active">
-            <span aria-hidden="true">▱</span> Files
+          <a routerLink="/library" routerLinkActive="active">
+            <span aria-hidden="true">▱</span> Library
           </a>
         </nav>
 

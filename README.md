@@ -4,7 +4,7 @@ A clean Angular + Express starter for document-grounded hackathon products. It d
 
 ## Included
 
-- Angular 21 standalone frontend with a minimal left navigation: Home, Query, Results, and Files
+- Angular 21 standalone frontend with a minimal left navigation: Home, Query, Results, and Library
 - Chat-style Query page with a bottom composer and source citations
 - Read-only Decision Console with persisted, observable retrieval and response-policy events
 - Durable, resumable conversation sessions on the Results page

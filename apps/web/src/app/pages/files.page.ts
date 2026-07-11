@@ -11,7 +11,7 @@ import { ApiService } from '../core/api.service'
   template: `
     <section class="page">
       <header class="page-header compact-header">
-        <div><span class="eyebrow">Files</span><h1>Learning library</h1><p>Upload source material, follow each processing stage, and query it once ready.</p></div>
+        <div><span class="eyebrow">Library</span><h1>Learning library</h1><p>Upload source material, follow each processing stage, and query it once ready.</p></div>
         <button class="button primary" type="button" (click)="fileInput.click()" [disabled]="uploading()">{{ uploading() ? 'Processing…' : 'Upload file' }}</button>
         <input #fileInput type="file" hidden accept=".txt,.md,.csv,.json,.html,.pdf,image/png,image/jpeg,image/webp" (change)="selectFile($event)">
       </header>
@@ -22,11 +22,11 @@ import { ApiService } from '../core/api.service'
         <div class="state-card error" role="alert">{{ error() }}</div>
       }
       @if (loading()) {
-        <div class="state-card" role="status">Loading files…</div>
+        <div class="state-card" role="status">Loading library…</div>
       } @else if (!documents().length) {
         <div class="empty-card"><span>▱</span><h2>Your corpus is empty</h2><p>Add a file to ingest, summarize, chunk, and vectorize it.</p><button class="button primary" type="button" (click)="fileInput.click()">Choose a file</button></div>
       } @else {
-        <div class="file-table" role="table" aria-label="Knowledge files">
+        <div class="file-table" role="table" aria-label="Library documents">
           <div class="file-row file-head" role="row"><span>File</span><span>Pipeline</span><span>Size</span><span>Updated</span></div>
           @for (document of documents(); track document.id) {
             <article class="file-row" role="row">
