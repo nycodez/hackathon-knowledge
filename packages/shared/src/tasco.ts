@@ -1,3 +1,5 @@
+import { WORKBOOK_PUBLIC_EVALUATION, WORKBOOK_USERS } from './tasco_workbook.js'
+
 export const TRACK_CODE = 'tasco' as const
 export const TRACK_TITLE = 'Tasco Enterprise Knowledge' as const
 export const API_PREFIX = '/api/v1' as const
@@ -50,6 +52,7 @@ export interface TascoDepartment {
   id: TascoDepartmentId
   en: string
   vi: string
+  knowledgeSpace?: 'Company Knowledge' | 'Department Knowledge' | 'Executive Knowledge'
 }
 
 export interface TascoUser {
@@ -58,6 +61,8 @@ export interface TascoUser {
   department: string
   role: TascoRole
   subsidiaryId: string
+  email?: string
+  status?: 'Active' | 'Inactive'
 }
 
 export interface TascoDocument {
@@ -102,6 +107,11 @@ export interface TascoPublicEvalRow {
   expected: TascoEvalExpectation
   documentIds: string[]
   answerType: TascoEvalAnswerType
+  category?: string
+  userRole?: TascoRole
+  userDepartment?: string
+  questionVi?: string
+  difficulty?: 'Easy' | 'Medium' | 'Hard'
 }
 
 export interface TascoSeedData {
@@ -297,14 +307,14 @@ export interface TascoRuntimeMeta {
 }
 
 const departments: TascoDepartment[] = [
-  { id: 'COMP', en: 'Company', vi: 'Công ty' },
-  { id: 'HR', en: 'Human Resources', vi: 'Nhân sự' },
-  { id: 'FIN', en: 'Finance', vi: 'Tài chính' },
-  { id: 'PROD', en: 'Product', vi: 'Sản phẩm' },
-  { id: 'ENG', en: 'Engineering', vi: 'Kỹ thuật' },
-  { id: 'OPS', en: 'Operations', vi: 'Vận hành' },
-  { id: 'LEGAL', en: 'Legal & Compliance', vi: 'Pháp chế & Tuân thủ' },
-  { id: 'EXEC', en: 'Executive Office', vi: 'Ban Điều hành' },
+  { id: 'COMP', en: 'Company', vi: 'Công ty', knowledgeSpace: 'Company Knowledge' },
+  { id: 'HR', en: 'Human Resources', vi: 'Nhân sự', knowledgeSpace: 'Department Knowledge' },
+  { id: 'FIN', en: 'Finance', vi: 'Tài chính', knowledgeSpace: 'Department Knowledge' },
+  { id: 'PROD', en: 'Product', vi: 'Sản phẩm', knowledgeSpace: 'Department Knowledge' },
+  { id: 'ENG', en: 'Engineering', vi: 'Kỹ thuật', knowledgeSpace: 'Department Knowledge' },
+  { id: 'OPS', en: 'Operations', vi: 'Vận hành', knowledgeSpace: 'Department Knowledge' },
+  { id: 'LEGAL', en: 'Legal & Compliance', vi: 'Pháp chế & Tuân thủ', knowledgeSpace: 'Department Knowledge' },
+  { id: 'EXEC', en: 'Executive Office', vi: 'Ban Điều hành', knowledgeSpace: 'Executive Knowledge' },
 ]
 
 export const DEPARTMENT_LABELS: Record<TascoDepartmentId, { en: string; vi: string }> = Object.fromEntries(
@@ -386,41 +396,19 @@ export function createTascoDemoData(): TascoSeedData {
     { id: 'TLD001', titleVi: 'Chính sách thử việc (Tasco Logistics - bản sao đồng bộ)', titleEn: 'Probation Policy (Tasco Logistics - synced copy)', department: 'Company', classification: 'Internal', subsidiaryId: 'TASCO-LOGISTICS-DEMO' },
   ]
 
-  const users: TascoUser[] = [
-    { id: 'U001', name: 'Nguyễn Văn An', department: 'Human Resources', role: 'Employee', subsidiaryId: 'DNP-WATER' },
-    { id: 'U002', name: 'Trần Thị Bình', department: 'Finance', role: 'Manager', subsidiaryId: 'DNP-WATER' },
-    { id: 'U003', name: 'Lê Minh Châu', department: 'Product', role: 'Director', subsidiaryId: 'DNP-WATER' },
-    { id: 'U004', name: 'Phạm Quốc Dũng', department: 'Engineering', role: 'Employee', subsidiaryId: 'DNP-WATER' },
-    { id: 'U005', name: 'Hoàng Thu Hà', department: 'Operations', role: 'Manager', subsidiaryId: 'DNP-WATER' },
-    { id: 'U006', name: 'Đỗ Anh Khoa', department: 'Legal & Compliance', role: 'Director', subsidiaryId: 'DNP-WATER' },
-    { id: 'U007', name: 'Vũ Thị Lan', department: 'Executive Office', role: 'Executive', subsidiaryId: 'DNP-WATER' },
-    { id: 'U008', name: 'Bùi Đức Minh', department: 'Company', role: 'Employee', subsidiaryId: 'DNP-WATER' },
-    { id: 'U009', name: 'Đặng Thanh Nga', department: 'Human Resources', role: 'Employee', subsidiaryId: 'DNP-WATER' },
-    { id: 'U010', name: 'Phan Hải Nam', department: 'Finance', role: 'Manager', subsidiaryId: 'DNP-WATER' },
-    { id: 'U011', name: 'Mai Phương Linh', department: 'Product', role: 'Director', subsidiaryId: 'DNP-WATER' },
-    { id: 'U012', name: 'Tạ Quang Huy', department: 'Engineering', role: 'Employee', subsidiaryId: 'DNP-WATER' },
-    { id: 'U013', name: 'Ngô Thùy Dương', department: 'Operations', role: 'Manager', subsidiaryId: 'DNP-WATER' },
-    { id: 'U014', name: 'Cao Việt Long', department: 'Legal & Compliance', role: 'Director', subsidiaryId: 'DNP-WATER' },
-    { id: 'U015', name: 'Đinh Thu Trang', department: 'Company', role: 'Employee', subsidiaryId: 'DNP-WATER' },
-    { id: 'U016', name: 'Lý Minh Quân', department: 'Human Resources', role: 'Manager', subsidiaryId: 'DNP-WATER' },
-    { id: 'U017', name: 'Trương Bảo Ngọc', department: 'Finance', role: 'Employee', subsidiaryId: 'DNP-WATER' },
-    { id: 'U018', name: 'Hà Đức Anh', department: 'Product', role: 'Employee', subsidiaryId: 'DNP-WATER' },
-    { id: 'U019', name: 'Võ Thanh Tâm', department: 'Engineering', role: 'Manager', subsidiaryId: 'DNP-WATER' },
-    { id: 'U020', name: 'Chu Mai Anh', department: 'Operations', role: 'Employee', subsidiaryId: 'DNP-WATER' },
-    { id: 'U021', name: 'Quách Hoàng Sơn', department: 'Legal & Compliance', role: 'Manager', subsidiaryId: 'DNP-WATER' },
-    { id: 'U022', name: 'Nguyễn Diệu Linh', department: 'Company', role: 'Employee', subsidiaryId: 'DNP-WATER' },
-    { id: 'U023', name: 'Trần Quốc Khánh', department: 'Human Resources', role: 'Director', subsidiaryId: 'DNP-WATER' },
-    { id: 'U024', name: 'Lê Mỹ Hạnh', department: 'Finance', role: 'Employee', subsidiaryId: 'DNP-WATER' },
-    { id: 'U025', name: 'Phạm Tuấn Kiệt', department: 'Product', role: 'Manager', subsidiaryId: 'DNP-WATER' },
-    { id: 'U026', name: 'Hoàng Minh Thư', department: 'Engineering', role: 'Director', subsidiaryId: 'DNP-WATER' },
-    { id: 'U027', name: 'Đỗ Gia Huy', department: 'Operations', role: 'Employee', subsidiaryId: 'DNP-WATER' },
-    { id: 'U028', name: 'Bùi Hải Yến', department: 'Legal & Compliance', role: 'Employee', subsidiaryId: 'DNP-WATER' },
-    { id: 'U029', name: 'Đặng Minh Tân', department: 'Company', role: 'Manager', subsidiaryId: 'DNP-WATER' },
-    { id: 'U030', name: 'Phan Ngọc Mai', department: 'Human Resources', role: 'Employee', subsidiaryId: 'DNP-WATER' },
-    { id: 'U031', name: 'Tạ Anh Dũng', department: 'Finance', role: 'Director', subsidiaryId: 'DNP-WATER' },
-    { id: 'U032', name: 'Ngô Khánh Vy', department: 'Engineering', role: 'Employee', subsidiaryId: 'DNP-WATER' },
-    { id: 'TLU001', name: 'Lâm Gia Bảo', department: 'Company', role: 'Employee', subsidiaryId: 'TASCO-LOGISTICS-DEMO' },
-  ]
+  const users: TascoUser[] = WORKBOOK_USERS.map((user) => ({
+    ...user,
+    subsidiaryId: 'DNP-WATER',
+  }))
+  users.push({
+    id: 'TLU001',
+    name: 'Lâm Gia Bảo',
+    department: 'Company',
+    role: 'Employee',
+    subsidiaryId: 'TASCO-LOGISTICS-DEMO',
+    email: 'tlu001@synthetic.local',
+    status: 'Active',
+  })
 
   return {
     departments,
@@ -444,29 +432,29 @@ const questions: TascoQuestion[] = [
     documentId: 'DOC007',
     questionEn: 'What is the salary band for a Product Manager?',
     questionVi: 'Khung lương Product Manager là bao nhiêu?',
-    answerEn: 'Per the Salary Band Reference (DOC007), the Product Manager band is set internally by HR and reviewed annually alongside the department budget.',
-    answerVi: 'Theo Khung lương tham khảo (DOC007), khung lương vị trí Product Manager do phòng Nhân sự quy định nội bộ và rà soát định kỳ hằng năm cùng ngân sách phòng ban.',
+    answerEn: 'Per the Salary Band Reference (DOC007), the reference salary range for a Product Manager is VND 35,000,000 to 60,000,000 per month, depending on level and experience.',
+    answerVi: 'Theo Khung lương tham khảo (DOC007), dải lương tham khảo cho Product Manager là 35.000.000 đến 60.000.000 VND mỗi tháng tùy cấp độ và kinh nghiệm.',
   },
   {
     documentId: 'DOC036',
     questionEn: "What are the company's strategic priorities for 2026?",
     questionVi: 'Ưu tiên chiến lược của công ty năm 2026 là gì?',
-    answerEn: 'Per Company Strategy 2026 (DOC036), the three strategic priorities focus on market expansion, operational optimization, and investment in an internal AI technology platform.',
-    answerVi: 'Theo Chiến lược công ty 2026 (DOC036), ba ưu tiên chiến lược năm 2026 tập trung vào mở rộng thị trường, tối ưu vận hành và đầu tư nền tảng công nghệ AI nội bộ.',
+    answerEn: 'Per Company Strategy 2026 (DOC036), the priorities are expanding the digital ecosystem, growing value-added services, and strengthening internal AI capabilities.',
+    answerVi: 'Theo Chiến lược công ty 2026 (DOC036), ưu tiên chiến lược gồm mở rộng hệ sinh thái số, tăng trưởng dịch vụ giá trị gia tăng và nâng cao năng lực AI nội bộ.',
   },
   {
     documentId: 'DOC002',
     questionEn: 'How many days of annual leave do employees get?',
     questionVi: 'Nhân viên được bao nhiêu ngày nghỉ phép năm?',
-    answerEn: 'Per the Leave Policy (DOC002), permanent employees receive annual leave per the company standard, accruing with tenure.',
-    answerVi: 'Theo Chính sách nghỉ phép (DOC002), nhân viên chính thức được nghỉ phép năm theo quy định chung của công ty, cộng dồn theo thâm niên công tác.',
+    answerEn: 'Per the Leave Policy (DOC002), permanent employees receive 15 days of paid annual leave after completing probation.',
+    answerVi: 'Theo Chính sách nghỉ phép (DOC002), nhân viên chính thức có 15 ngày nghỉ phép năm có lương sau khi hoàn thành thử việc.',
   },
   {
     documentId: 'DOC027',
     questionEn: 'What is the target SLA for critical services?',
     questionVi: 'SLA mục tiêu cho dịch vụ quan trọng là bao nhiêu?',
-    answerEn: 'Per the Operations SLA Policy (DOC027), services rated critical must meet the SLA targets set and monitored monthly by the Operations department.',
-    answerVi: 'Theo Quy định SLA vận hành (DOC027), các dịch vụ xếp hạng quan trọng phải đáp ứng mục tiêu SLA do phòng Vận hành thiết lập và giám sát hằng tháng.',
+    answerEn: 'Per the Operations SLA Policy (DOC027), critical services have a 99.5% target SLA and require a monitoring dashboard.',
+    answerVi: 'Theo Quy định SLA vận hành (DOC027), dịch vụ quan trọng có SLA mục tiêu 99,5% và phải có dashboard theo dõi.',
   },
   {
     documentId: 'DOC001',
@@ -493,22 +481,22 @@ const questions: TascoQuestion[] = [
     documentId: 'DOC003',
     questionEn: 'What is required before booking business travel?',
     questionVi: 'Cần làm gì trước khi đặt chuyến công tác?',
-    answerEn: 'Per the Business Travel & Transport Policy (DOC003), employees must obtain the required manager approval and use approved booking channels before travel is confirmed.',
-    answerVi: 'Theo Chính sách công tác và di chuyển (DOC003), nhân viên phải có phê duyệt của quản lý và sử dụng kênh đặt chỗ được chấp thuận trước khi xác nhận chuyến đi.',
+    answerEn: 'Per the Business Travel & Transport Policy (DOC003), every business trip must be approved by the direct manager before flights or hotels are booked.',
+    answerVi: 'Theo Chính sách công tác và di chuyển (DOC003), mọi chuyến công tác cần được quản lý trực tiếp phê duyệt trước khi đặt vé hoặc khách sạn.',
   },
   {
     documentId: 'DOC011',
     questionEn: 'How are employee expenses reimbursed?',
     questionVi: 'Chi phí của nhân viên được hoàn ứng như thế nào?',
-    answerEn: 'Per the Expense Reimbursement Policy (DOC011), employees submit itemized evidence through the approved workflow for manager and Finance review.',
-    answerVi: 'Theo Chính sách hoàn ứng chi phí (DOC011), nhân viên nộp chứng từ chi tiết qua quy trình được phê duyệt để quản lý và Tài chính rà soát.',
+    answerEn: 'Per the Expense Reimbursement Policy (DOC011), claims must be submitted in the system within 10 business days of the expense, and expenses over VND 200,000 require a valid invoice or receipt.',
+    answerVi: 'Theo Chính sách hoàn ứng chi phí (DOC011), yêu cầu phải được nộp trên hệ thống trong vòng 10 ngày làm việc; khoản chi trên 200.000 VND cần hóa đơn hoặc chứng từ hợp lệ.',
   },
   {
     documentId: 'DOC031',
     questionEn: 'How must personal data be handled?',
     questionVi: 'Dữ liệu cá nhân phải được xử lý như thế nào?',
-    answerEn: 'Per the Personal Data Protection Policy (DOC031), personal data is collected for an approved purpose, accessed only by authorized staff, and retained only as required.',
-    answerVi: 'Theo Chính sách bảo vệ dữ liệu cá nhân (DOC031), dữ liệu cá nhân chỉ được thu thập cho mục đích được phê duyệt, chỉ người có quyền được truy cập và chỉ lưu trong thời gian cần thiết.',
+    answerEn: 'Per the Personal Data Protection Policy (DOC031), personal data requires an appropriate legal basis or consent, and only data necessary for the disclosed purpose may be collected.',
+    answerVi: 'Theo Chính sách bảo vệ dữ liệu cá nhân (DOC031), dữ liệu cá nhân chỉ được xử lý khi có cơ sở pháp lý phù hợp hoặc sự đồng ý, và chỉ thu thập dữ liệu cần thiết cho mục đích đã thông báo.',
   },
 ]
 
@@ -523,64 +511,10 @@ const permissionCases: TascoPermissionCase[] = [
   { id: 'T8', userId: 'U010', documentId: 'TLD001', ruleEn: 'Subsidiary isolation (150+ requirement)', ruleVi: 'Cách ly công ty con (yêu cầu 150+)', expected: 'Deny', point: 'subsidiary pre-filter' },
 ]
 
-const publicEvaluation: TascoPublicEvalRow[] = [
-  ['P001', 'U001', 'Allow', ['DOC001'], 'Exact'],
-  ['P002', 'U002', 'Allow', ['DOC002'], 'Exact'],
-  ['P003', 'U010', 'Allow', ['DOC011'], 'Semantic'],
-  ['P004', 'U003', 'Allow', ['DOC018'], 'Summary'],
-  ['P005', 'U004', 'Allow', ['DOC025'], 'Semantic'],
-  ['P006', 'U006', 'Allow', ['DOC035'], 'Exact'],
-  ['P007', 'U003', 'Deny', ['DOC036'], 'Permission'],
-  ['P008', 'U007', 'Allow', ['DOC036'], 'Summary'],
-  ['P009', 'U004', 'Deny', ['DOC007'], 'Permission'],
-  ['P010', 'U001', 'Allow', ['DOC007'], 'Exact'],
-  ['P011', 'U005', 'Allow', ['DOC004'], 'Exact'],
-  ['P012', 'U011', 'Allow', ['DOC003'], 'Exact'],
-  ['P013', 'U010', 'Allow', ['DOC013'], 'Exact'],
-  ['P014', 'U010', 'Allow', ['DOC012'], 'Exact'],
-  ['P015', 'U010', 'Allow', ['DOC014'], 'Exact'],
-  ['P016', 'U003', 'Allow', ['DOC019'], 'Semantic'],
-  ['P017', 'U003', 'Allow', ['DOC020'], 'Summary'],
-  ['P018', 'U004', 'Allow', ['DOC021'], 'Semantic'],
-  ['P019', 'U004', 'Allow', ['DOC022'], 'Exact'],
-  ['P020', 'U004', 'Allow', ['DOC024'], 'Exact'],
-  ['P021', 'U005', 'Allow', ['DOC026'], 'Summary'],
-  ['P022', 'U005', 'Allow', ['DOC027'], 'Exact'],
-  ['P023', 'U006', 'Allow', ['DOC031'], 'Exact'],
-  ['P024', 'U006', 'Allow', ['DOC032'], 'Exact'],
-  ['P025', 'U006', 'Allow', ['DOC033'], 'Exact'],
-  ['P026', 'U003', 'Allow', ['DOC034'], 'Semantic'],
-  ['P027', 'U003', 'Deny', ['DOC037'], 'Permission'],
-  ['P028', 'U007', 'Allow', ['DOC037'], 'Exact'],
-  ['P029', 'U007', 'Allow', ['DOC039'], 'Summary'],
-  ['P030', 'U007', 'Allow', ['DOC040'], 'Exact'],
-  ['P031', 'U003', 'Allow', ['DOC001', 'DOC011'], 'Multi-document'],
-  ['P032', 'U004', 'Deny', ['DOC017'], 'Permission'],
-  ['P033', 'U003', 'Allow', ['DOC017'], 'Exact'],
-  ['P034', 'U005', 'Allow', ['DOC030'], 'Summary'],
-  ['P035', 'U002', 'Allow', ['DOC030'], 'Permission'],
-  ['P036', 'U001', 'Allow', ['DOC010'], 'Exact'],
-  ['P037', 'U003', 'Deny', ['DOC006'], 'Permission'],
-  ['P038', 'U004', 'Allow', ['DOC023'], 'Exact'],
-  ['P039', 'U002', 'Allow', ['DOC015'], 'Exact'],
-  ['P040', 'U006', 'Allow', ['DOC031'], 'Semantic'],
-  ['P041', 'U007', 'Allow', ['DOC038'], 'Summary'],
-  ['P042', 'U004', 'Deny', ['DOC038'], 'Permission'],
-  ['P043', 'U003', 'Allow', ['DOC018'], 'Exact'],
-  ['P044', 'U012', 'Allow', ['DOC022'], 'Exact'],
-  ['P045', 'U008', 'Allow', ['DOC005'], 'Exact'],
-  ['P046', 'U001', 'Allow', ['DOC009'], 'Exact'],
-  ['P047', 'U010', 'Allow', ['DOC013'], 'Summary'],
-  ['P048', 'U014', 'Allow', ['DOC035'], 'Exact'],
-  ['P049', 'U013', 'Allow', ['DOC028'], 'Exact'],
-  ['P050', 'U003', 'Allow', ['DOC016'], 'Summary'],
-].map(([questionId, userId, expected, documentIds, answerType]) => ({
-  questionId,
-  userId,
-  expected,
-  documentIds,
-  answerType,
-})) as TascoPublicEvalRow[]
+const publicEvaluation: TascoPublicEvalRow[] = WORKBOOK_PUBLIC_EVALUATION.map((row) => ({
+  ...row,
+  documentIds: [...row.documentIds],
+}))
 
 export function findUser(userId: string, data = createTascoDemoData()): TascoUser {
   const user = data.users.find((candidate) => candidate.id === userId)

@@ -85,12 +85,13 @@ const classifications: TascoClassification[] = ['Public', 'Internal', 'Confident
           </div>
           <div class="table-scroll">
             <table class="policy-table department-table">
-              <thead><tr><th>Department</th><th>Vietnamese</th><th>Users</th><th>Subsidiary coverage</th></tr></thead>
+              <thead><tr><th>Department</th><th>Vietnamese</th><th>Knowledge space</th><th>Users</th><th>Subsidiary coverage</th></tr></thead>
               <tbody>
                 @for (department of departmentRoster(); track department.id) {
                   <tr>
                     <td><span class="department-code">{{ department.id }}</span><strong>{{ department.en }}</strong></td>
                     <td>{{ department.vi }}</td>
+                    <td><span class="status-chip neutral">{{ department.knowledgeSpace ?? 'Department Knowledge' }}</span></td>
                     <td>
                       <div class="department-user-list">
                         @for (user of department.users; track user.id) {

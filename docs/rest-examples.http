@@ -1,0 +1,44 @@
+@baseUrl = http://localhost:3333
+@appCode = MYTASCO
+@token = demo-U001
+
+### COP-compatible staff search
+POST {{baseUrl}}/mytasco/v1/staff/search
+Authorization: Bearer {{token}}
+X-App-Code: {{appCode}}
+X-Locale: vi-VN
+X-Timezone: Asia/Ho_Chi_Minh
+Content-Type: application/json
+
+{
+  "example": { "keyword": "Nguyễn", "status": 1 },
+  "pageInfo": { "pageSize": 5, "currentPage": 0 }
+}
+
+### COP-compatible organization graph
+GET {{baseUrl}}/mytasco/v1/organization/tree?depth=2
+Authorization: Bearer {{token}}
+X-App-Code: {{appCode}}
+
+### Permission-aware knowledge search
+GET {{baseUrl}}/api/v1/workspace/search?userId=U001&q=khung%20lương&language=vi
+
+### Grounded knowledge answer
+POST {{baseUrl}}/api/v1/workspace/ask
+Content-Type: application/json
+
+{
+  "userId": "U001",
+  "question": "Khung lương Product Manager là bao nhiêu?",
+  "language": "vi"
+}
+
+### Permission refusal for a non-Executive
+POST {{baseUrl}}/api/v1/workspace/ask
+Content-Type: application/json
+
+{
+  "userId": "U004",
+  "question": "Ưu tiên chiến lược của công ty năm 2026 là gì?",
+  "language": "vi"
+}

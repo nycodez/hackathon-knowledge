@@ -3,11 +3,13 @@ import { pathToFileURL } from 'node:url'
 import type { PoolClient } from 'pg'
 import { createTascoDemoData, deptId, type TascoDocument, type TascoQuestion, type TascoUser } from '../../../packages/shared/src/index.js'
 import { getPool } from '../src/db/pool.js'
-import { chunkDocument, type KnowledgeChunkInput } from '../src/ingest/chunk_documents.js'
+import { WORKBOOK_DOCUMENTS, type WorkbookDocumentRecord } from '../src/fixtures/workbook_documents.js'
+import { chunkDocument, chunkWorkbookDocument, type KnowledgeChunkInput } from '../src/ingest/chunk_documents.js'
 import EmbeddingService from '../src/services/embedding_service.js'
 
 const embeddingService = new EmbeddingService()
 const tenantId = 'tasco-demo'
+const workbookDocumentsById = new Map(WORKBOOK_DOCUMENTS.map((document) => [document.documentId, document]))
 
 export interface SeedOptions {
   resetDemoState?: boolean
@@ -69,7 +71,16 @@ async function seedTascoDemoData(client: PoolClient): Promise<Record<string, num
           metadata = EXCLUDED.metadata,
           updated_at = now()
       `,
-      [tenantId, department.id, department.en, department.vi, { source: 'canonical_department_catalog' }]
+      [
+        tenantId,
+        department.id,
+        department.en,
+        department.vi,
+        {
+          source: 'Departments sheet canonical catalog',
+          knowledgeSpace: department.knowledgeSpace ?? 'Department Knowledge',
+        },
+      ]
     )
   }
 
@@ -87,7 +98,19 @@ async function seedTascoDemoData(client: PoolClient): Promise<Record<string, num
           metadata = EXCLUDED.metadata,
           updated_at = now()
       `,
-      [user.id, tenantId, user.name, deptId(user.department), user.role, user.subsidiaryId, { source: 'Users sheet canonical identity' }]
+      [
+        user.id,
+        tenantId,
+        user.name,
+        deptId(user.department),
+        user.role,
+        user.subsidiaryId,
+        {
+          source: user.id === 'TLU001' ? 'synthetic subsidiary isolation persona' : 'Users sheet canonical identity',
+          email: user.email ?? null,
+          status: user.status ?? 'Active',
+        },
+      ]
     )
   }
 
@@ -116,16 +139,35 @@ async function seedTascoDemoData(client: PoolClient): Promise<Record<string, num
   for (const row of data.publicEvaluation) {
     await client.query(
       `
-        INSERT INTO tasco_public_eval_rows (id, user_id, document_ids, expected, answer_type)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO tasco_public_eval_rows (
+          id, user_id, document_ids, expected, answer_type,
+          category, user_role, user_department, question_vi, difficulty
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         ON CONFLICT (id) DO UPDATE SET
           user_id = EXCLUDED.user_id,
           document_ids = EXCLUDED.document_ids,
           expected = EXCLUDED.expected,
           answer_type = EXCLUDED.answer_type,
+          category = EXCLUDED.category,
+          user_role = EXCLUDED.user_role,
+          user_department = EXCLUDED.user_department,
+          question_vi = EXCLUDED.question_vi,
+          difficulty = EXCLUDED.difficulty,
           updated_at = now()
       `,
-      [row.questionId, row.userId, row.documentIds, row.expected, row.answerType]
+      [
+        row.questionId,
+        row.userId,
+        row.documentIds,
+        row.expected,
+        row.answerType,
+        row.category ?? null,
+        row.userRole ?? null,
+        row.userDepartment ?? null,
+        row.questionVi ?? null,
+        row.difficulty ?? null,
+      ]
     )
   }
 
@@ -154,15 +196,24 @@ async function seedTascoDemoData(client: PoolClient): Promise<Record<string, num
       deterministicUuid('tasco-seed-checksum:workspace-demo:v1'),
       tenantId,
       'workspace-demo:v1',
-      createHash('sha256').update(JSON.stringify(data)).digest('hex'),
+      createHash('sha256').update(JSON.stringify({ data, workbookDocuments: WORKBOOK_DOCUMENTS })).digest('hex'),
       counts,
-      { embeddingModel: embeddingService.model(), embeddingsEnabled: embeddingService.isEnabled(), source: 'createTascoDemoData' },
+      {
+        embeddingModel: embeddingService.model(),
+        embeddingsEnabled: embeddingService.isEnabled(),
+        source: 'ai_workspace_dataset_vietnamese_participants.xlsm',
+        canonicalDocuments: WORKBOOK_DOCUMENTS.length,
+      },
     ]
   )
   return counts
 }
 
-async function upsertKnowledgeSource(client: PoolClient, document: TascoDocument): Promise<string> {
+async function upsertKnowledgeSource(
+  client: PoolClient,
+  document: TascoDocument,
+  workbookDocument?: WorkbookDocumentRecord
+): Promise<string> {
   const result = await client.query<{ id: string }>(
     `
       INSERT INTO knowledge_sources (
@@ -190,7 +241,18 @@ async function upsertKnowledgeSource(client: PoolClient, document: TascoDocument
       `${document.titleEn} / ${document.titleVi}`,
       document.classification,
       deptId(document.department),
-      { titleVi: document.titleVi, source: 'ai_workspace_dataset_vietnamese_participants.xlsm' },
+      {
+        titleVi: document.titleVi,
+        source: workbookDocument
+          ? 'ai_workspace_dataset_vietnamese_participants.xlsm'
+          : 'synthetic subsidiary isolation extension',
+        owner: workbookDocument?.owner ?? document.department,
+        allowedAccess: workbookDocument?.allowedAccess ?? 'All Employees',
+        lastUpdated: workbookDocument?.lastUpdated ?? null,
+        tags: workbookDocument?.tags ?? ['synthetic', 'subsidiary-isolation'],
+        language: workbookDocument?.language ?? 'vi',
+        workbookWordCount: workbookDocument?.wordCount ?? null,
+      },
     ]
   )
 
@@ -232,10 +294,14 @@ async function seedQuestions(client: PoolClient, questions: TascoQuestion[]): Pr
 async function seedKnowledgeChunks(client: PoolClient, documents: TascoDocument[], questions: TascoQuestion[]): Promise<void> {
   const records: Array<{ sourceId: string; document: TascoDocument; chunk: KnowledgeChunkInput }> = []
   for (const document of documents) {
-    const sourceId = await upsertKnowledgeSource(client, document)
+    const workbookDocument = workbookDocumentsById.get(document.id)
+    const sourceId = await upsertKnowledgeSource(client, document, workbookDocument)
     await client.query('DELETE FROM knowledge_chunks WHERE source_id = $1', [sourceId])
     const question = questions.find((candidate) => candidate.documentId === document.id)
-    for (const chunk of chunkDocument(document, question)) records.push({ sourceId, document, chunk })
+    const chunks = workbookDocument
+      ? chunkWorkbookDocument(document, workbookDocument)
+      : chunkDocument(document, question)
+    for (const chunk of chunks) records.push({ sourceId, document, chunk })
   }
 
   let embeddings: Array<number[] | null>

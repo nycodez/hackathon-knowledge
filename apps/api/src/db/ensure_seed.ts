@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { createTascoDemoData } from '../../../../packages/shared/src/index.js'
 import { getOptionalEnv } from '../config/env.js'
+import { WORKBOOK_DOCUMENTS } from '../fixtures/workbook_documents.js'
 import { query } from './pool.js'
 
 let seedPromise: Promise<void> | undefined
@@ -21,7 +22,9 @@ export async function resetSeed(): Promise<void> {
 }
 
 async function ensureCanonicalSeed(): Promise<void> {
-  const expectedChecksum = createHash('sha256').update(JSON.stringify(createTascoDemoData())).digest('hex')
+  const expectedChecksum = createHash('sha256')
+    .update(JSON.stringify({ data: createTascoDemoData(), workbookDocuments: WORKBOOK_DOCUMENTS }))
+    .digest('hex')
   const result = await query<{ checksum: string | null; documents: string }>(
     `
       SELECT

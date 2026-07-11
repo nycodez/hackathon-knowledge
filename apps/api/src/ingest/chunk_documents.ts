@@ -11,6 +11,16 @@ export interface KnowledgeChunkInput {
   metadata: Record<string, unknown>
 }
 
+export interface WorkbookDocumentContent {
+  contentVi: string
+  owner: string
+  allowedAccess: string
+  lastUpdated: string
+  tags: string[]
+  language: 'vi'
+  wordCount: number
+}
+
 const SECTION_HEADINGS = {
   en: ['Purpose', 'Scope', 'Core requirements', 'Responsibilities', 'Access control'],
   vi: ['Mục đích', 'Phạm vi', 'Nội dung chính', 'Trách nhiệm', 'Kiểm soát truy cập'],
@@ -72,6 +82,33 @@ const DETAIL_SENTENCES = {
 
 const TARGET_TOKENS = 320
 const OVERLAP_TOKENS = 48
+
+export function chunkWorkbookDocument(
+  document: TascoDocument,
+  source: WorkbookDocumentContent
+): KnowledgeChunkInput[] {
+  const content = source.contentVi.trim()
+  const tokens = content.split(/\s+/).filter(Boolean)
+  return [{
+    chunkIndex: 0,
+    headingPath: `${document.titleVi} > Toàn văn`,
+    content,
+    language: 'vi',
+    tokenCount: tokens.length,
+    metadata: {
+      docCode: document.id,
+      heading: 'Toàn văn',
+      language: source.language,
+      permissionTriple: [document.classification, deptId(document.department), document.subsidiaryId],
+      owner: source.owner,
+      allowedAccess: source.allowedAccess,
+      lastUpdated: source.lastUpdated,
+      tags: source.tags,
+      workbookWordCount: source.wordCount,
+      source: 'ai_workspace_dataset_vietnamese_participants.xlsm',
+    },
+  }]
+}
 
 export function chunkDocument(document: TascoDocument, question?: TascoQuestion): KnowledgeChunkInput[] {
   const chunks: KnowledgeChunkInput[] = []

@@ -17,7 +17,11 @@
       "destination": "/api?__path=:path*"
     },
     {
-      "source": "/((?!api(?:/|$)|assets(?:/|$)).*)",
+      "source": "/mytasco/:path*",
+      "destination": "/api?__mytasco_path=:path*"
+    },
+    {
+      "source": "/((?!api(?:/|$)|mytasco(?:/|$)|assets(?:/|$)).*)",
       "destination": "/index.html"
     }
   ]

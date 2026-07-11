@@ -4,6 +4,7 @@ import multer from 'multer'
 import { optionalEnv } from './config/env.js'
 import { ensureSeed } from './db/ensure_seed.js'
 import apiRoutes from './routes/api.routes.js'
+import myTascoRoutes from './routes/mytasco.routes.js'
 import workspaceRoutes from './routes/workspace.routes.js'
 
 const app = express()
@@ -20,6 +21,7 @@ app.use('/api/v1', async (req, _res, next) => {
     next(error)
   }
 }, workspaceRoutes)
+app.use('/mytasco/v1', myTascoRoutes)
 app.use('/api', apiRoutes)
 app.use((_req, res) => res.status(404).json({
   success: false,

@@ -9,6 +9,8 @@ interface UserRow {
   department_id: string
   role: TascoUser['role']
   subsidiary_id: string
+  email: string | null
+  status: 'Active' | 'Inactive' | null
 }
 
 function toUser(row: UserRow): TascoUser {
@@ -18,6 +20,8 @@ function toUser(row: UserRow): TascoUser {
     department: row.department_id,
     role: row.role,
     subsidiaryId: row.subsidiary_id,
+    email: row.email ?? undefined,
+    status: row.status ?? undefined,
   }
 }
 
@@ -25,7 +29,8 @@ export default class UsersRepository {
   public async list(): Promise<TascoUser[]> {
     const result = await query<UserRow>(
       `
-        SELECT id, tenant_id, full_name, department_id, role, subsidiary_id
+        SELECT id, tenant_id, full_name, department_id, role, subsidiary_id,
+               metadata->>'email' AS email, metadata->>'status' AS status
         FROM tasco_users
         WHERE tenant_id = 'tasco-demo'
         ORDER BY id
@@ -37,7 +42,8 @@ export default class UsersRepository {
   public async findPrincipal(userId: string): Promise<Principal | null> {
     const result = await query<UserRow>(
       `
-        SELECT id, tenant_id, full_name, department_id, role, subsidiary_id
+        SELECT id, tenant_id, full_name, department_id, role, subsidiary_id,
+               metadata->>'email' AS email, metadata->>'status' AS status
         FROM tasco_users
         WHERE tenant_id = 'tasco-demo' AND id = $1
         LIMIT 1

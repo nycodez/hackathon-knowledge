@@ -25,8 +25,11 @@ The generic framework behavior remains available, while `/api/v1/workspace/*` ow
 - Optional Claude OCR for scanned PDFs and images
 - Server-owned demo identities with role, department, and subsidiary boundaries
 - Permission-aware SQL pre-filtering before lexical or vector ranking
-- Bilingual seeded knowledge chunks, citations, audit evidence, and persisted evaluation runs
+- Exact Vietnamese policy text and metadata from the supplied synthetic participant workbook
+- The workbook's 32 canonical users, 40 documents, eight departments, and 50 public evaluation rows
+- Citations, append-only audit evidence, and persisted evaluation runs
 - Reproducible 50-row public evaluation and T1–T8 permission gates
+- COP-compatible My Tasco staff and organization facade, OpenAPI contract, REST examples, and Dart adapter
 
 ## Architecture
 
@@ -47,6 +50,8 @@ The starter deliberately keeps the first deployment small:
 
 For enterprise-knowledge queries, the API resolves the supplied demo user ID against the server-owned user table. Subsidiary, classification, role, and department predicates run in SQL before lexical or vector ranking. Only authorized chunks can enter deterministic answer construction or optional model context.
 
+The 40 canonical knowledge sources preserve the Vietnamese `content_vi` and document metadata from `ai_workspace_dataset_vietnamese_participants.xlsm`. A separately labelled 41st source and persona exist only to demonstrate cross-subsidiary isolation; they are never represented as challenge-provided data. The participant workbook itself states that all records are synthetic.
+
 For a production-sized corpus, move raw objects to S3 or Vercel Blob, upload directly with signed URLs, and keep only metadata, extracted text, chunks, and vectors in PostgreSQL.
 
 ## Local run
@@ -66,6 +71,7 @@ pnpm dev
 - Web: `http://localhost:4200`
 - API health: `http://localhost:3333/api/health`
 - Secure API meta: `http://localhost:3333/api/v1/meta`
+- My Tasco facade health: `http://localhost:3333/mytasco/v1/health` (requires `X-App-Code: MYTASCO`)
 
 ## Neon PostgreSQL 17
 
@@ -86,8 +92,8 @@ Import this repository as one Vercel project with the repository root as the pro
 - installs the pnpm workspace;
 - builds the Angular browser application;
 - publishes `dist/web/browser`;
-- deploys `api/[...path].ts` as the Express function;
-- preserves `/api/*` while rewriting other application routes to Angular's `index.html`.
+- deploys `api/index.js` as the Express function;
+- preserves `/api/*` and `/mytasco/*` while rewriting other application routes to Angular's `index.html`.
 
 Set these environment variables for Preview and Production:
 
@@ -136,8 +142,19 @@ Run migrations before opening the deployed application. Migrations are intention
 | `POST` | `/api/v1/workspace/permission-test` | Run T1–T8 permission cases |
 | `GET/POST` | `/api/v1/workspace/eval` | Run and optionally persist the 50-row evaluation |
 | `GET` | `/api/v1/workspace/retrieval-trace` | Replay append-only audit evidence |
+| `POST` | `/mytasco/v1/staff/search` | COP-compatible deterministic staff directory search |
+| `POST` | `/mytasco/v1/staff/quick-search` | Staff autocomplete alias |
+| `GET` | `/mytasco/v1/organization/tree` | COP-compatible organization and department hierarchy |
 
 Generic framework data remains scoped with `x-workspace-id`. The secure API discards browser-supplied role, department, and subsidiary claims and resolves those attributes from the canonical database user.
+
+The My Tasco facade requires `X-App-Code: MYTASCO`, echoes `X-Request-Id`, and uses the documented `{ status, message, body, requestId }` COP envelope. It is a deterministic mock: authentication is optional, while supplied Bearer tokens must use `demo-U001` through `demo-U032`. Production integration must replace those demo tokens with the My Tasco token provider.
+
+Submission/integration artifacts:
+
+- [`docs/openapi.yaml`](docs/openapi.yaml) — OpenAPI 3.1 contract
+- [`docs/mytasco_client.dart`](docs/mytasco_client.dart) — configurable Dart adapter with one guarded 401 refresh retry
+- [`docs/rest-examples.http`](docs/rest-examples.http) — staff, organization, search, answer, and refusal examples
 
 ## Verification
 
@@ -146,7 +163,7 @@ pnpm build
 pnpm verify:knowledge
 ```
 
-The knowledge verification checks bilingual chunk structure, SQL-level Restricted denial, cross-subsidiary isolation, the same-question Employee/Executive flow, 50/50 public evaluation, T1–T8, zero permission leaks, zero Restricted context hits, and persisted audit evidence.
+The knowledge verification checks all 40 workbook-backed Vietnamese sources, exact leave-policy content, SQL-level Restricted denial, cross-subsidiary isolation, the same-question Employee/Executive flow, 50/50 public evaluation, T1–T8, zero permission leaks, zero Restricted context hits, and persisted audit evidence.
 
 ## Where to customize
 
@@ -160,7 +177,7 @@ The knowledge verification checks bilingual chunk structure, SQL-level Restricte
 
 ## Production hardening checklist
 
-- Add authentication and derive `workspace_id` from the authenticated principal, not a browser-controlled header.
+- Replace the demo identity selector and `demo-U###` facade tokens with the production My Tasco Bearer-token provider and token-derived principal.
 - Move large raw uploads to object storage with signed upload URLs.
 - Add a durable queue for long-running OCR and indexing jobs.
 - Add malware scanning, MIME signature validation, rate limits, and per-workspace quotas.

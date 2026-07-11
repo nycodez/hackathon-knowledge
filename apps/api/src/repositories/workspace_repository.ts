@@ -22,6 +22,7 @@ interface DepartmentRow {
   id: TascoDepartment['id']
   name_en: string
   name_vi: string
+  knowledge_space: TascoDepartment['knowledgeSpace'] | null
 }
 
 interface SubsidiaryRow {
@@ -46,6 +47,11 @@ interface EvalRow {
   document_ids: string[]
   expected: 'Allow' | 'Deny'
   answer_type: TascoPublicEvalRow['answerType']
+  category: string | null
+  user_role: TascoPublicEvalRow['userRole'] | null
+  user_department: string | null
+  question_vi: string | null
+  difficulty: TascoPublicEvalRow['difficulty'] | null
 }
 
 export default class WorkspaceRepository {
@@ -76,13 +82,18 @@ export default class WorkspaceRepository {
   private async listDepartments(): Promise<TascoDepartment[]> {
     const result = await query<DepartmentRow>(
       `
-        SELECT id, name_en, name_vi
+        SELECT id, name_en, name_vi, metadata->>'knowledgeSpace' AS knowledge_space
         FROM tasco_departments
         WHERE tenant_id = 'tasco-demo'
         ORDER BY id
       `
     )
-    return result.rows.map((row) => ({ id: row.id, en: row.name_en, vi: row.name_vi }))
+    return result.rows.map((row) => ({
+      id: row.id,
+      en: row.name_en,
+      vi: row.name_vi,
+      knowledgeSpace: row.knowledge_space ?? undefined,
+    }))
   }
 
   public async findQuestion(rawQuestion: string): Promise<TascoQuestion | null> {
@@ -156,7 +167,12 @@ export default class WorkspaceRepository {
 
   private async listPublicEvaluation(): Promise<TascoPublicEvalRow[]> {
     const result = await query<EvalRow>(
-      'SELECT id, user_id, document_ids, expected, answer_type FROM tasco_public_eval_rows ORDER BY id'
+      `
+        SELECT id, user_id, document_ids, expected, answer_type,
+               category, user_role, user_department, question_vi, difficulty
+        FROM tasco_public_eval_rows
+        ORDER BY id
+      `
     )
     return result.rows.map((row) => ({
       questionId: row.id,
@@ -164,6 +180,11 @@ export default class WorkspaceRepository {
       documentIds: row.document_ids,
       expected: row.expected,
       answerType: row.answer_type,
+      category: row.category ?? undefined,
+      userRole: row.user_role ?? undefined,
+      userDepartment: row.user_department ?? undefined,
+      questionVi: row.question_vi ?? undefined,
+      difficulty: row.difficulty ?? undefined,
     }))
   }
 }

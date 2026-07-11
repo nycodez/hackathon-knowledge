@@ -1,0 +1,189 @@
+openapi: 3.1.0
+info:
+  title: Hackathon Knowledge + My Tasco Compatibility API
+  version: 0.2.0
+  description: Permission-aware knowledge API with the COP-compatible directory facade used by My Tasco.
+servers:
+  - url: https://hackathon-knowledge.vercel.app
+  - url: http://localhost:3333
+paths:
+  /mytasco/v1/staff/search:
+    post:
+      summary: Search the deterministic participant staff directory
+      parameters:
+        - $ref: '#/components/parameters/AppCode'
+        - $ref: '#/components/parameters/RequestId'
+      security:
+        - bearerAuth: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffSearchRequest'
+      responses:
+        '200':
+          description: COP success envelope
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CopSuccess'
+                  - type: object
+                    properties:
+                      body:
+                        $ref: '#/components/schemas/StaffSearchBody'
+        '400':
+          $ref: '#/components/responses/CopError'
+        '401':
+          $ref: '#/components/responses/CopError'
+  /mytasco/v1/staff/quick-search:
+    post:
+      summary: Staff autocomplete alias
+      parameters:
+        - $ref: '#/components/parameters/AppCode'
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffSearchRequest'
+      responses:
+        '200':
+          description: COP success envelope
+  /mytasco/v1/organization/tree:
+    get:
+      summary: Return the deterministic DNP Water department hierarchy
+      parameters:
+        - $ref: '#/components/parameters/AppCode'
+        - $ref: '#/components/parameters/RequestId'
+        - name: organizationId
+          in: query
+          schema: { type: integer, minimum: 1 }
+        - name: depth
+          in: query
+          schema: { type: integer, minimum: 0, maximum: 8, default: 2 }
+      responses:
+        '200':
+          description: COP success envelope containing organization nodes
+        '404':
+          $ref: '#/components/responses/CopError'
+  /api/v1/workspace/search:
+    get:
+      summary: Search only knowledge chunks authorized for the selected demo identity
+      parameters:
+        - { name: userId, in: query, required: true, schema: { type: string, pattern: '^U[0-9]{3}$' } }
+        - { name: q, in: query, required: true, schema: { type: string } }
+        - { name: language, in: query, schema: { type: string, enum: [en, vi] } }
+      responses:
+        '200':
+          description: Authorized documents, citations, and hidden-candidate count
+  /api/v1/workspace/ask:
+    post:
+      summary: Generate a grounded answer after SQL-level ACL filtering
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, question]
+              properties:
+                userId: { type: string, pattern: '^U[0-9]{3}$' }
+                question: { type: string, minLength: 1 }
+                language: { type: string, enum: [en, vi], default: vi }
+      responses:
+        '200':
+          description: Grounded answer or explicit permission refusal with enforcement trace
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Production uses the My Tasco token provider; the deterministic mock accepts demo-U001 through demo-U032.
+  parameters:
+    AppCode:
+      name: X-App-Code
+      in: header
+      required: true
+      schema: { type: string, const: MYTASCO }
+    RequestId:
+      name: X-Request-Id
+      in: header
+      required: false
+      schema: { type: string, format: uuid }
+  responses:
+    CopError:
+      description: COP-compatible error envelope
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CopError'
+  schemas:
+    CopSuccess:
+      type: object
+      required: [status, message, body, requestId]
+      properties:
+        status: { type: string, const: success }
+        message: { type: string, const: SUCCESS }
+        body: {}
+        requestId: { type: string }
+    CopError:
+      type: object
+      required: [status, code, message, technicalMessage, requestId]
+      properties:
+        status: { type: string, const: error }
+        code: { type: string }
+        message: { type: string }
+        technicalMessage: { type: string }
+        requestId: { type: string }
+    PageInfo:
+      type: object
+      properties:
+        pageSize: { type: integer, minimum: 1, maximum: 400, default: 400 }
+        currentPage: { type: integer, minimum: 0, default: 0 }
+        totalRecord: { type: integer, minimum: 0 }
+    StaffSearchRequest:
+      type: object
+      properties:
+        example:
+          type: object
+          properties:
+            keyword: { type: string }
+            orgUnitId: { type: integer }
+            status: { type: integer, enum: [0, 1] }
+        pageInfo:
+          $ref: '#/components/schemas/PageInfo'
+    StaffSummary:
+      type: object
+      required: [staffId, staffCode, staffName, title, status, provinceName, listOrgUnit]
+      properties:
+        staffId: { type: integer }
+        staffCode: { type: string }
+        staffName: { type: string }
+        title: { type: string }
+        email: { type: [string, 'null'] }
+        phoneNumber: { type: [string, 'null'] }
+        status: { type: integer, enum: [0, 1] }
+        provinceName: { type: string }
+        listOrgUnit:
+          type: array
+          items:
+            type: object
+            required: [orgUnitId, orgUnitCode, orgUnitName]
+            properties:
+              orgUnitId: { type: integer }
+              orgUnitCode: { type: string }
+              orgUnitName: { type: string }
+    StaffSearchBody:
+      type: object
+      required: [result, pageInfo]
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffSummary'
+        pageInfo:
+          $ref: '#/components/schemas/PageInfo'

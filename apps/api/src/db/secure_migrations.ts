@@ -333,4 +333,18 @@ export const secureKnowledgeMigrations: Array<{ id: string; sql: string }> = [
       $$;
     `,
   },
+  {
+    id: '005_preserve_workbook_evaluation_fields',
+    sql: `
+      ALTER TABLE tasco_public_eval_rows
+        ADD COLUMN IF NOT EXISTS category varchar(80),
+        ADD COLUMN IF NOT EXISTS user_role varchar(32),
+        ADD COLUMN IF NOT EXISTS user_department varchar(128),
+        ADD COLUMN IF NOT EXISTS question_vi text,
+        ADD COLUMN IF NOT EXISTS difficulty varchar(32);
+
+      CREATE INDEX IF NOT EXISTS tasco_public_eval_category_idx
+        ON tasco_public_eval_rows (category, difficulty);
+    `,
+  },
 ]
