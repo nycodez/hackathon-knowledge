@@ -13,7 +13,7 @@ export function getPool(): Pool {
       idleTimeoutMillis: 30_000,
       connectionTimeoutMillis: 10_000,
       options: '-c statement_timeout=15000',
-      ssl: useDatabaseSsl() ? { rejectUnauthorized: false } : undefined,
+      ssl: useDatabaseSsl() ? { rejectUnauthorized: true } : undefined,
     })
   }
 
@@ -41,4 +41,3 @@ export async function transaction<T>(work: (client: PoolClient) => Promise<T>): 
     client.release()
   }
 }
-

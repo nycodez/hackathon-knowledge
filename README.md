@@ -6,11 +6,11 @@ A minimal enterprise-knowledge proof of concept built from the Hackathon Framewo
 
 The original Home, Query, Results, and Library navigation remains intact. An HR divider after Library marks where challenge-specific pages begin:
 
-- **Secure Ask** documents the same-question/different-permission demo and its server-owned identity contract.
-- **Access Rules** makes the deny-by-default classification and subsidiary policy explicit.
-- **Evaluation** records the required permission, context-isolation, and citation-integrity gates.
+- **Secure Ask** runs the same-question/different-permission demo against server-resolved identities.
+- **Access Rules** replays the deny-by-default classification and subsidiary policy against live database rows.
+- **Evaluation** runs and persists the permission, context-isolation, and citation-integrity gates.
 
-These pages are the UI scaffold for the enterprise-knowledge PoC. The secure backend pre-filter and evaluation harness are the next implementation slice; the generic framework behavior remains available while they are added.
+The generic framework behavior remains available, while `/api/v1/workspace/*` owns the permission-aware knowledge workflow.
 
 ## Included
 
@@ -24,14 +24,18 @@ These pages are the UI scaffold for the enterprise-knowledge PoC. The secure bac
 - PostgreSQL migrations with workspace scoping, full-text search, `vector(1024)`, and HNSW indexing
 - Dependency-free feature-hash embeddings, so retrieval works before an external embedding provider is added
 - Optional Claude OCR for scanned PDFs and images
+- Server-owned demo identities with role, department, and subsidiary boundaries
+- Permission-aware SQL pre-filtering before lexical or vector ranking
+- Bilingual seeded knowledge chunks, citations, audit evidence, and persisted evaluation runs
+- Reproducible 50-row public evaluation and T1–T8 permission gates
 
 ## Architecture
 
 ```mermaid
 flowchart LR
   B[Angular browser app] -->|/api| V[Express Vercel Function]
-  V --> R[(AWS RDS PostgreSQL 17)]
-  R --> P[pgvector + full-text indexes]
+  V --> R[(Neon PostgreSQL 17)]
+  R --> P[pgvector + full-text indexes + audit evidence]
   V -. scanned files .-> O[Optional OCR provider]
 ```
 
@@ -42,35 +46,39 @@ The starter deliberately keeps the first deployment small:
 - Scanned PDFs and images move to `needs_ocr` until `ANTHROPIC_API_KEY` is configured.
 - Summaries are deterministic and embeddings use local feature hashing. Replace these services with challenge-specific models without changing the database or API contracts.
 
-For each query, the configured lightweight Bedrock model creates a structured retrieval plan. The API uses that plan to retrieve ready workspace-scoped chunks, bounds and labels the full source passages, and sends that context with the user's question to the primary Bedrock model. No relevant chunks means no generation call.
+For enterprise-knowledge queries, the API resolves the supplied demo user ID against the server-owned user table. Subsidiary, classification, role, and department predicates run in SQL before lexical or vector ranking. Only authorized chunks can enter deterministic answer construction or optional model context.
 
 For a production-sized corpus, move raw objects to S3 or Vercel Blob, upload directly with signed URLs, and keep only metadata, extracted text, chunks, and vectors in PostgreSQL.
 
 ## Local run
 
-Prerequisites: Node.js 22+, pnpm 9, and Docker.
+Prerequisites: Node.js 22+ and pnpm 9. Docker is optional when using the checked-in local PostgreSQL fallback.
 
-Install dependencies, create the local environment file, start pgvector PostgreSQL, and migrate it:
+Copy the local environment template, provide a Neon connection string, then migrate and seed:
 
 ```sh
 pnpm install
-pnpm setup:local
+cp apps/api/.env.example apps/api/.env
+pnpm db:migrate
+pnpm db:seed
 pnpm dev
 ```
 
 - Web: `http://localhost:4200`
 - API health: `http://localhost:3333/api/health`
-- PostgreSQL: `localhost:5433` (container port `5432`; host port `5433` avoids a common local PostgreSQL conflict)
+- Secure API meta: `http://localhost:3333/api/v1/meta`
 
-## AWS RDS PostgreSQL 17
+## Neon PostgreSQL 17
 
-1. Create an RDS PostgreSQL 17 instance in or near `ap-southeast-1`.
-2. Connect with a database owner and run `pnpm db:migrate` using the RDS `DATABASE_URL`. The migration enables `vector`, `pgcrypto`, and `unaccent`.
-3. Require TLS with `PGSSLMODE=require`.
-4. Put the database URL in Vercel environment variables; never commit it.
-5. Keep network access narrow. For a durable deployment, use Vercel Secure Compute/static egress and allow only that egress in the RDS security group.
+The local checkout is associated with a free Neon project through `.neon`; that file contains only the project ID. Credentials stay in the ignored `apps/api/.env` file.
 
-The Vercel function is pinned to Singapore (`sin1`) by default to reduce latency to an RDS instance in Singapore. Change `regions` in `vercel.json` if the database lives elsewhere.
+1. Authenticate with `npx neonctl@latest auth`.
+2. Create or select a PostgreSQL 17 project in `aws-ap-southeast-1`.
+3. Store its pooled connection string in `apps/api/.env` as `DATABASE_URL`.
+4. Keep `PGSSLMODE=verify-full` and `PG_POOL_MAX=5` for verified serverless TLS.
+5. Run `pnpm db:migrate`, `pnpm db:seed`, and `pnpm verify:knowledge`.
+
+The Vercel function is pinned to Singapore (`sin1`) to stay close to the Neon project.
 
 ## Vercel deployment
 
@@ -86,8 +94,8 @@ Set these environment variables for Preview and Production:
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `DATABASE_URL` | Yes | RDS PostgreSQL connection string |
-| `PGSSLMODE` | Yes | Use `require` for RDS |
+| `DATABASE_URL` | Yes | Neon pooled PostgreSQL connection string |
+| `PGSSLMODE` | Yes | Use `verify-full` for Neon certificate and hostname verification |
 | `PG_POOL_MAX` | No | Per-function pool size; defaults to 5 |
 | `CORS_ORIGIN` | No | Only needed when the API is called from another origin |
 | `ANTHROPIC_API_KEY` | No | Enables OCR for scanned PDFs and images |
@@ -120,8 +128,26 @@ Run migrations before opening the deployed application. Migrations are intention
 | `POST` | `/api/documents` | Ingest one multipart file |
 | `POST` | `/api/documents/:id/process` | Process or retry an ingested file |
 | `DELETE` | `/api/documents/:id` | Remove a file and its chunks |
+| `GET` | `/api/v1/meta` | Secure knowledge runtime and corpus counts |
+| `GET` | `/api/v1/workspace/seed-world` | Safe demo identities, source metadata, and question prompts; no source answers |
+| `POST` | `/api/v1/workspace/ask` | Permission-filtered grounded answer or refusal |
+| `POST` | `/api/v1/workspace/ask/by-role` | Compare the same question across canonical personas |
+| `GET` | `/api/v1/workspace/documents/:id` | Authorized source detail or denial evidence |
+| `GET` | `/api/v1/workspace/search` | Permission-prefiltered hybrid retrieval |
+| `POST` | `/api/v1/workspace/permission-test` | Run T1–T8 permission cases |
+| `GET/POST` | `/api/v1/workspace/eval` | Run and optionally persist the 50-row evaluation |
+| `GET` | `/api/v1/workspace/retrieval-trace` | Replay append-only audit evidence |
 
-Every data query is scoped with `x-workspace-id`; the frontend currently sends `hackathon-demo`. Replace this demo header with verified identity and authorization before accepting untrusted users.
+Generic framework data remains scoped with `x-workspace-id`. The secure API discards browser-supplied role, department, and subsidiary claims and resolves those attributes from the canonical database user.
+
+## Verification
+
+```sh
+pnpm build
+pnpm verify:knowledge
+```
+
+The knowledge verification checks bilingual chunk structure, SQL-level Restricted denial, cross-subsidiary isolation, the same-question Employee/Executive flow, 50/50 public evaluation, T1–T8, zero permission leaks, zero Restricted context hits, and persisted audit evidence.
 
 ## Where to customize
 

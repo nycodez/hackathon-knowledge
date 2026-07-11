@@ -25,7 +25,7 @@ export default class IngestionService {
 
     try {
       const extraction = await extractText(document)
-      let text = extraction.text
+      let text: string | null = extraction.text
 
       if (extraction.requiresOcr) {
         text = await ocrDocument(document)

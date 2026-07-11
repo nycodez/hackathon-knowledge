@@ -42,7 +42,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
 
         <div class="sidebar-foot">
           <span class="status-dot"></span>
-          <span><strong>Demo workspace</strong><small>RDS + pgvector</small></span>
+          <span><strong>Demo workspace</strong><small>Neon + pgvector</small></span>
         </div>
       </aside>
 

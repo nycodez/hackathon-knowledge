@@ -1,4 +1,4 @@
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http'
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import type {
   ApiEnvelope,
@@ -10,8 +10,30 @@ import type {
   KnowledgeDocument,
   LibraryFolder,
   LibraryListing,
+  TascoAskResponse,
+  TascoDocumentDetailResponse,
+  TascoEvalReport,
+  TascoRuntimeMeta,
+  TascoUser,
+  TascoWorkspaceBootstrap,
 } from '@hackathon/shared'
 import { map, type Observable } from 'rxjs'
+
+export interface KnowledgeByRoleAskResponse {
+  question: string
+  results: Array<{ user: TascoUser; response: TascoAskResponse }>
+}
+
+export interface KnowledgeEvalRun {
+  id: string
+  status: string
+  score: number
+  total: number
+  leaks: number
+  report: TascoEvalReport | null
+  metadata: Record<string, unknown>
+  createdAt: string
+}
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -77,6 +99,43 @@ export class ApiService {
 
   deleteDocument(id: string): Observable<void> {
     return this.http.delete<void>(`/api/documents/${id}`, { headers: this.headers })
+  }
+
+  knowledgeWorld(): Observable<TascoWorkspaceBootstrap> {
+    return this.get<TascoWorkspaceBootstrap>('/api/v1/workspace/seed-world')
+  }
+
+  knowledgeMeta(): Observable<TascoRuntimeMeta> {
+    return this.get<TascoRuntimeMeta>('/api/v1/meta')
+  }
+
+  secureAsk(input: { userId: string; question: string; language: 'en' | 'vi'; threadId?: string }): Observable<TascoAskResponse> {
+    return this.unwrap(this.http.post<ApiEnvelope<TascoAskResponse>>('/api/v1/workspace/ask', input, { headers: this.headers }))
+  }
+
+  secureAskByRole(question: string, language: 'en' | 'vi'): Observable<KnowledgeByRoleAskResponse> {
+    return this.unwrap(this.http.post<ApiEnvelope<KnowledgeByRoleAskResponse>>(
+      '/api/v1/workspace/ask/by-role',
+      { question, language },
+      { headers: this.headers }
+    ))
+  }
+
+  knowledgeDocumentDetail(userId: string, documentId: string, language: 'en' | 'vi'): Observable<TascoDocumentDetailResponse> {
+    const params = new HttpParams().set('userId', userId).set('language', language)
+    return this.get<TascoDocumentDetailResponse>(`/api/v1/workspace/documents/${encodeURIComponent(documentId)}?${params.toString()}`)
+  }
+
+  knowledgeEval(): Observable<TascoEvalReport> {
+    return this.get<TascoEvalReport>('/api/v1/workspace/eval')
+  }
+
+  latestKnowledgeEval(): Observable<KnowledgeEvalRun | null> {
+    return this.get<KnowledgeEvalRun | null>('/api/v1/workspace/eval/latest')
+  }
+
+  runKnowledgeEval(): Observable<TascoEvalReport> {
+    return this.unwrap(this.http.post<ApiEnvelope<TascoEvalReport>>('/api/v1/workspace/eval', {}, { headers: this.headers }))
   }
 
   message(error: unknown): string {

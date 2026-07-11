@@ -10,7 +10,15 @@ export function optionalEnv(name: string): string | undefined {
   return process.env[name]?.trim() || undefined
 }
 
+export const getOptionalEnv = optionalEnv
+
+export const getEnv = requireEnv
+
 export function useDatabaseSsl(): boolean {
-  return (process.env.PGSSLMODE ?? '').toLowerCase() === 'require'
+  const sslMode = (process.env.PGSSLMODE ?? '').toLowerCase()
+  if (['require', 'verify-ca', 'verify-full'].includes(sslMode)) return true
+  if (sslMode === 'disable') return false
+  return process.env.DATABASE_SSL === 'true'
 }
 
+export const shouldUseDatabaseSsl = useDatabaseSsl

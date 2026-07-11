@@ -1,0 +1,23 @@
+[
+  {
+    "id": "tasco-public-eval",
+    "gateId": "public-eval",
+    "required": true,
+    "description": "Public_Evaluation",
+    "target": "50/50 target, >=48/50 minimum"
+  },
+  {
+    "id": "tasco-leak-gate",
+    "gateId": "leak-gate",
+    "required": true,
+    "description": "Permission leak gate",
+    "target": "0 unauthorized chunks or citations"
+  },
+  {
+    "id": "tasco-permission-tests",
+    "gateId": "permission-tests",
+    "required": true,
+    "description": "T1-T8 permission tests",
+    "target": "8/8 pass"
+  }
+]

@@ -1,3 +1,5 @@
+import { secureKnowledgeMigrations } from './secure_migrations.js'
+
 export const migrations = [
   {
     id: '001_knowledge_workspace',
@@ -126,4 +128,5 @@ export const migrations = [
         ON knowledge_documents (workspace_id, folder_id, updated_at DESC);
     `,
   },
+  ...secureKnowledgeMigrations,
 ] as const

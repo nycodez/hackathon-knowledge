@@ -5,6 +5,9 @@
   "type": "module",
   "license": "MIT",
   "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "pnpm -r --parallel dev",
     "dev:api": "pnpm --filter @hackathon/api dev",
@@ -14,7 +17,9 @@
     "db:down": "docker compose down",
     "build": "pnpm --filter @hackathon/web build && pnpm --filter @hackathon/api build",
     "typecheck": "pnpm -r typecheck",
-    "db:migrate": "pnpm --filter @hackathon/api migrate"
+    "db:migrate": "pnpm --filter @hackathon/api migrate",
+    "db:seed": "pnpm --filter @hackathon/api seed",
+    "verify:knowledge": "pnpm --filter @hackathon/api verify:chunks && pnpm --filter @hackathon/api verify:retrieval && pnpm --filter @hackathon/api verify:http"
   },
   "workspaces": [
     "apps/*",
@@ -25,6 +30,7 @@
     "zone.js": "^0.15.0"
   },
   "devDependencies": {
+    "@types/express": "^4.17.21",
     "@types/node": "^22.15.0",
     "typescript": "^5.9.0"
   }
