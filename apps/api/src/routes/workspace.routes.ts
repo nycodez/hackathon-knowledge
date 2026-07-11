@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from 'express'
 import { z } from 'zod'
-import type { TascoAuditEventType } from '../../../../packages/shared/src/index.js'
+import { buildCitation, deptId, type TascoAuditEventType, type TascoExampleQa } from '../../../../packages/shared/src/index.js'
 import { getOptionalEnv } from '../config/env.js'
 import { resetSeed } from '../db/ensure_seed.js'
 import { query } from '../db/pool.js'
@@ -56,13 +56,19 @@ router.get('/workspace/summary', asyncRoute(async (_req, res) => {
 
 router.get('/workspace/seed-world', asyncRoute(async (_req, res) => {
   const data = await workspace.load()
+  const visibleDocuments = data.documents.filter((document) => document.classification !== 'Restricted')
   res.json({
     success: true,
     data: {
       departments: data.departments,
       users: data.users,
-      documents: data.documents,
-      questions: data.questions.map(({ documentId, questionEn, questionVi }) => ({ documentId, questionEn, questionVi })),
+      personas: data.personas,
+      documents: visibleDocuments,
+      questions: data.questions.map(({ documentId, questionEn, questionVi }) => ({
+        documentId: data.documents.find((document) => document.id === documentId)?.classification === 'Restricted' ? 'REDACTED' : documentId,
+        questionEn,
+        questionVi,
+      })),
       subsidiaries: data.subsidiaries,
       personaIds: data.personaIds,
     },
@@ -79,8 +85,27 @@ router.get('/workspace/personas', asyncRoute(async (_req, res) => {
   const data = await workspace.load()
   res.json({
     success: true,
-    data: { users: data.users, personaIds: data.personaIds, subsidiaries: data.subsidiaries },
+    data: { users: data.users, personas: data.personas, personaIds: data.personaIds, subsidiaries: data.subsidiaries },
   })
+}))
+
+router.get('/workspace/examples', asyncRoute(async (_req, res) => {
+  const data = await workspace.load()
+  const examples: TascoExampleQa[] = data.questions
+    .filter((question) => question.documentId.startsWith('PM-') || question.documentId.startsWith('ACC-PM-'))
+    .flatMap((question) => {
+      const document = data.documents.find((candidate) => candidate.id === question.documentId)
+      if (!document || document.classification === 'Restricted') return []
+      return [{
+        id: `QA-${question.documentId}`,
+        departmentId: deptId(document.department),
+        classification: document.classification,
+        question: question.questionEn,
+        answer: question.answerEn,
+        citation: buildCitation(document),
+      }]
+    })
+  res.json({ success: true, data: examples, meta: { count: examples.length, renderedRequirement: '>=10' } })
 }))
 
 router.get(
@@ -166,12 +191,13 @@ router.get(
     body: emptyObject.optional(),
     params: emptyObject,
     query: z.object({
-      userId: z.string().optional(),
+      userId: z.string().min(1),
       documentId: z.string().optional(),
       eventType: z.enum(['retrieval_query', 'permission_denied', 'deterministic_answer', 'claude_answer', 'document_detail', 'eval_run']).optional(),
       limit: z.coerce.number().int().min(1).max(100).default(25),
     }),
   })),
+  resolveIdentity('query'),
   asyncRoute(async (req, res) => {
     const data = await workspace.load()
     res.json({
@@ -245,12 +271,21 @@ router.get(
   })
 )
 
+router.get(
+  '/workspace/ask',
+  validate(z.object({ body: emptyObject.optional(), params: emptyObject, query: identityQuery })),
+  resolveIdentity('query'),
+  asyncRoute(async (_req, res) => {
+    res.json({ success: true, data: await threads.list(res.locals.principal.userId) })
+  })
+)
+
 router.post(
   '/workspace/ask/by-role',
-  validate(z.object({ params: emptyObject, query: emptyObject, body: z.object({ question: z.string().trim().min(1).max(8_000), language }) })),
+  validate(z.object({ params: emptyObject, query: emptyObject, body: z.object({ question: z.string().trim().min(1).max(8_000), language, userId: z.string().min(1) }) })),
   asyncRoute(async (req, res) => {
     const data = await workspace.load()
-    res.json({ success: true, data: await retrieval.answerQuestionByRole(req.body.question, undefined, data, req.body.language) })
+    res.json({ success: true, data: await retrieval.answerQuestionByRole(req.body.question, [req.body.userId], data, req.body.language) })
   })
 )
 

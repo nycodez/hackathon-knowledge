@@ -4,7 +4,6 @@ import {
   deptId,
   type ApiEnvelope,
   type TascoAskResponse,
-  type TascoDocumentDetailResponse,
   type TascoEvalCaseResult,
   type TascoEvalReport,
   type TascoRetrievalTraceReplayResponse,
@@ -76,18 +75,22 @@ try {
     headers: { 'content-type': 'application/json' },
     body: '{}',
   })
-  expect(permissionCases.data?.length === 8, `expected 8 permission cases, got ${permissionCases.data?.length ?? 0}`)
-  expect(permissionCases.data?.every((result) => result.passed) === true, 'one or more T1-T8 permission cases failed')
+  expect(permissionCases.data?.length === 15, `expected 15 permission cases, got ${permissionCases.data?.length ?? 0}`)
+  expect(permissionCases.data?.every((result) => result.passed) === true, 'one or more permission cases failed')
 
-  const question = "What are the company's strategic priorities for 2026?"
-  const employee = await ask('U001', question)
-  const executive = await ask('U007', question)
-  expect(employee.state === 'permission_refusal', `employee ask state was ${employee.state}`)
-  expect(employee.trace.decision === 'deny', `employee ask decision was ${employee.trace.decision}`)
-  expect(employee.citation === undefined, 'employee refusal included a citation')
+  const question = 'How is the property portfolio performing this month?'
+  const employee = await ask('PM-FIN-EMP', question)
+  const executive = await ask('PM-FIN-EXEC', question)
+  expect(employee.state === 'answered', `employee accounting ask state was ${employee.state}`)
+  expect(employee.citation?.sourceId === 'PM-DIR-001', 'employee answer was not grounded in the Accounting view')
   expect(executive.state === 'answered', `executive ask state was ${executive.state}`)
   expect(executive.trace.decision === 'allow', `executive ask decision was ${executive.trace.decision}`)
-  expect(executive.citation?.sourceId === 'DOC036', 'executive answer was not grounded in DOC036')
+  expect(executive.citation?.sourceId === 'PM-EXEC-002', 'executive answer was not grounded in the Restricted executive view')
+
+  const deniedMna = await ask('PM-FIN-EMP', 'What property acquisition or M&A targets are under review?')
+  expect(deniedMna.state === 'permission_refusal', 'Employee M&A request was not denied')
+  expect(deniedMna.trace.document === undefined && deniedMna.question.documentId === 'REDACTED', 'denial disclosed protected source metadata')
+  expect(deniedMna.trace.proof.authorizedChunks === 0 && deniedMna.trace.proof.restrictedContextSentToModel === 0, 'denial proof was not zero-context')
 
   const employeeSearch = await request<ApiEnvelope<TascoSearchResponse>>(
     '/api/v1/workspace/search?userId=U001&q=Company%20Strategy%202026&language=en'
@@ -99,36 +102,31 @@ try {
   )
   expect(executiveSearch.data?.results.some((result) => result.document.id === 'DOC036') === true, 'executive search could not retrieve DOC036')
 
-  const employeeDetail = await request<ApiEnvelope<TascoDocumentDetailResponse>>(
-    '/api/v1/workspace/documents/DOC036?userId=U001&language=en'
-  )
-  expect(employeeDetail.data?.decision === 'deny', 'employee document detail was not denied')
-  expect(employeeDetail.data?.content === undefined, 'employee document detail exposed protected content')
-  expect(employeeDetail.data?.chunks === undefined, 'employee document detail exposed protected chunk metadata')
-  expect(employeeDetail.data?.citation === undefined, 'employee document detail exposed a protected citation')
+  const employeeDetail = await fetch(`${baseUrl}/api/v1/workspace/documents/PM-EXEC-001?userId=PM-FIN-EMP&language=en`)
+  expect(employeeDetail.status === 404, `protected document detail returned ${employeeDetail.status} instead of 404`)
 
   const crossSubsidiary = await request<ApiEnvelope<TascoSearchResponse>>(
     '/api/v1/workspace/search?userId=U001&q=probation%20policy&language=en'
   )
   expect(crossSubsidiary.data?.results.every((result) => result.document.subsidiaryId === 'DNP-WATER') === true, 'cross-subsidiary search result leaked')
-  expect(crossSubsidiary.data?.results.every((result) => result.document.id !== 'TLD001') === true, 'TLD001 crossed the subsidiary boundary')
-  const foreignDetail = await fetch(`${baseUrl}/api/v1/workspace/documents/TLD001?userId=U001&language=en`)
+  expect(crossSubsidiary.data?.results.every((result) => result.document.id !== 'ACC-PM-001') === true, 'property-management document crossed the subsidiary boundary')
+  const foreignDetail = await fetch(`${baseUrl}/api/v1/workspace/documents/ACC-PM-001?userId=U001&language=en`)
   expect(foreignDetail.status === 404, `cross-subsidiary document detail returned ${foreignDetail.status} instead of 404`)
 
   const evaluation = await request<ApiEnvelope<TascoEvalReport>>('/api/v1/workspace/eval')
   expect(evaluation.data?.score === 50 && evaluation.data.total === 50, `public evaluation score was ${evaluation.data?.score}/${evaluation.data?.total}`)
   expect(evaluation.data?.leaks === 0, `public evaluation found ${evaluation.data?.leaks} leaks`)
-  expect(evaluation.data?.caseResults.filter((result) => result.passed).length === 8, 'evaluation did not pass all T1-T8 cases')
+  expect(evaluation.data?.caseResults.filter((result) => result.passed).length === 15, 'evaluation did not pass all permission cases')
   expect(evaluation.data?.metrics?.restrictedContextHits === 0, `evaluation found ${evaluation.data?.metrics?.restrictedContextHits} Restricted context hits`)
 
   const persistedEvaluation = await request<ApiEnvelope<TascoEvalReport>>('/api/v1/workspace/eval', { method: 'POST' })
   expect(persistedEvaluation.data?.score === 50 && persistedEvaluation.data.leaks === 0, 'persisted evaluation gate failed')
 
   const trace = await request<ApiEnvelope<TascoRetrievalTraceReplayResponse>>(
-    '/api/v1/workspace/retrieval-trace?userId=U001&documentId=DOC036&limit=25'
+    '/api/v1/workspace/retrieval-trace?userId=PM-FIN-EMP&documentId=PM-EXEC-001&eventType=permission_denied&limit=25'
   )
   expect((trace.data?.summary.events ?? 0) > 0, 'no persisted denial audit evidence was returned')
-  expect(trace.data?.events.every((event) => event.actorUserId === 'U001') === true, 'audit replay crossed the actor filter')
+  expect(trace.data?.events.every((event) => event.actorUserId === 'PM-FIN-EMP') === true, 'audit replay crossed the actor filter')
   expect(trace.data?.events.every((event) => event.metadata.citationChunkId == null) === true, 'denial audit contained a protected citation chunk')
 } finally {
   await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()))
@@ -140,7 +138,7 @@ console.log(JSON.stringify({
   gates: {
     genericApiPreserved: !failures.some((failure) => failure.includes('generic /api')),
     myTascoCompatibility: !failures.some((failure) => failure.includes('My Tasco')),
-    permissionCases: '8/8',
+    permissionCases: '15/15',
     publicEvaluation: '50/50',
     leaks: 0,
     restrictedContextHits: 0,

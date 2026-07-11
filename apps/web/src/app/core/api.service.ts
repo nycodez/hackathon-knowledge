@@ -14,6 +14,9 @@ import type {
   TascoDocumentDetailResponse,
   TascoEvalReport,
   TascoRuntimeMeta,
+  TascoExampleQa,
+  TascoThreadResponse,
+  TascoThreadSummary,
   TascoUser,
   TascoWorkspaceBootstrap,
 } from '@hackathon/shared'
@@ -113,12 +116,24 @@ export class ApiService {
     return this.unwrap(this.http.post<ApiEnvelope<TascoAskResponse>>('/api/v1/workspace/ask', input, { headers: this.headers }))
   }
 
-  secureAskByRole(question: string, language: 'en' | 'vi'): Observable<KnowledgeByRoleAskResponse> {
+  secureAskByRole(userId: string, question: string, language: 'en' | 'vi'): Observable<KnowledgeByRoleAskResponse> {
     return this.unwrap(this.http.post<ApiEnvelope<KnowledgeByRoleAskResponse>>(
       '/api/v1/workspace/ask/by-role',
-      { question, language },
+      { userId, question, language },
       { headers: this.headers }
     ))
+  }
+
+  knowledgeThreads(userId: string): Observable<TascoThreadSummary[]> {
+    return this.get<TascoThreadSummary[]>(`/api/v1/workspace/ask?userId=${encodeURIComponent(userId)}`)
+  }
+
+  knowledgeThread(userId: string, threadId: string): Observable<TascoThreadResponse> {
+    return this.get<TascoThreadResponse>(`/api/v1/workspace/ask/${encodeURIComponent(threadId)}?userId=${encodeURIComponent(userId)}`)
+  }
+
+  knowledgeExamples(): Observable<TascoExampleQa[]> {
+    return this.get<TascoExampleQa[]>('/api/v1/workspace/examples')
   }
 
   knowledgeDocumentDetail(userId: string, documentId: string, language: 'en' | 'vi'): Observable<TascoDocumentDetailResponse> {

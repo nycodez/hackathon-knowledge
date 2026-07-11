@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "migrate": "tsx scripts/migrate.ts",
     "seed": "tsx scripts/seed.ts",
+    "crawl:apify": "tsx scripts/crawl-apify-context.ts",
     "verify:chunks": "tsx scripts/verify-chunks.ts",
     "verify:retrieval": "tsx scripts/verify-retrieval.ts",
     "verify:http": "tsx scripts/verify-http.ts"

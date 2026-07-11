@@ -23,22 +23,48 @@ X-App-Code: {{appCode}}
 ### Permission-aware knowledge search
 GET {{baseUrl}}/api/v1/workspace/search?userId=U001&q=khung%20lương&language=vi
 
-### Grounded knowledge answer
+### Grounded property-accounting answer (Employee)
 POST {{baseUrl}}/api/v1/workspace/ask
 Content-Type: application/json
 
 {
-  "userId": "U001",
-  "question": "Khung lương Product Manager là bao nhiêu?",
-  "language": "vi"
+  "userId": "PM-FIN-EMP",
+  "question": "What is the property month-end close sequence?",
+  "language": "en"
 }
 
-### Permission refusal for a non-Executive
+### Same portfolio question (Employee accounting view)
 POST {{baseUrl}}/api/v1/workspace/ask
 Content-Type: application/json
 
 {
-  "userId": "U004",
-  "question": "Ưu tiên chiến lược của công ty năm 2026 là gì?",
-  "language": "vi"
+  "userId": "PM-FIN-EMP",
+  "question": "How is the property portfolio performing this month?",
+  "language": "en"
 }
+
+### Same portfolio question (Executive view)
+POST {{baseUrl}}/api/v1/workspace/ask
+Content-Type: application/json
+
+{
+  "userId": "PM-FIN-EXEC",
+  "question": "How is the property portfolio performing this month?",
+  "language": "en"
+}
+
+### Provably invisible Restricted M&A source
+POST {{baseUrl}}/api/v1/workspace/ask
+Content-Type: application/json
+
+{
+  "userId": "PM-FIN-EMP",
+  "question": "What property acquisition or M&A targets are under review?",
+  "language": "en"
+}
+
+### Sticky history for the Accounting Employee
+GET {{baseUrl}}/api/v1/workspace/ask?userId=PM-FIN-EMP
+
+### Rendered example Q&A deliverable
+GET {{baseUrl}}/api/v1/workspace/examples

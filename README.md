@@ -1,34 +1,37 @@
 # Hackathon Knowledge
 
-A minimal enterprise-knowledge proof of concept built from the Hackathon Framework. It keeps the generic document workflow available as an API compatibility layer while centering the product experience on permission-aware retrieval, policy evidence, and evaluation.
+A minimal enterprise-knowledge proof of concept for a Tasco employee in **Accounting within property management**. The product experience is deliberately limited to Home, Ask, and Evidence: get a grounded answer fast, compare correctly scoped depth by role, prove a Restricted source is invisible, and resume sticky per-user history.
 
 ## Customization boundary
 
-The primary navigation keeps the framework's Home, Query, Results, and Library links. A divider marks where the enterprise-knowledge workflow begins:
+The generic framework APIs remain compatible, but extra starter modules are removed from the primary product navigation:
 
-- **Home** summarizes the live corpus, identity boundaries, policy coverage, runtime profile, and latest evaluation evidence.
-- **Secure Ask** runs the same-question/different-permission demo against server-resolved identities.
-- **Access Rules** replays the deny-by-default classification and subsidiary policy against live database rows.
-- **Evaluation** runs and persists the permission, context-isolation, and citation-integrity gates.
+- **Home** explains the property-management Accounting story and role/department matrix.
+- **Ask** runs the grounded answer, same-question Employee/Executive proof, zero-leak refusal, and sticky identity history.
+- **Evidence** renders 13 example Q&As, 15 permission cases, and all 50 sponsor evaluation rows.
 
 The generic framework behavior remains available, while `/api/v1/workspace/*` owns the permission-aware knowledge workflow.
 
 ## Included
 
-- Angular 21 standalone frontend with framework and enterprise-knowledge navigation separated by a divider
+- Angular 21 standalone frontend focused on Home, Ask, and Evidence
 - Knowledge-specific Home widgets backed by the live enterprise corpus and evaluation state
 - Tenant-scoped department directory with database-enforced user-to-department membership
-- Query, Results, and Library workflows retained from the reusable framework
+- Generic Query, Results, and Library APIs retained as a compatibility layer, not as demo modules
 - Express API packaged as a Vercel Function under `/api`
 - PostgreSQL migrations with workspace scoping, full-text search, `vector(1024)`, and HNSW indexing
 - Dependency-free feature-hash embeddings, so retrieval works before an external embedding provider is added
 - Optional Claude OCR for scanned PDFs and images
-- Server-owned demo identities with role, department, and subsidiary boundaries
+- The real 32 sponsor Users-sheet identities, kept separate from 32 property-management demo personas (four roles × eight departments)
+- Evaluation identity resolved by joining to the canonical Users table; the 18 mismatched role snapshots remain evidence, never authority
+- Strict Departments-sheet normalization in English and Vietnamese; unknown departments fail closed
 - Permission-aware SQL pre-filtering before lexical or vector ranking
 - Exact Vietnamese policy text and metadata from the supplied synthetic participant workbook
 - The workbook's 32 canonical users, 40 documents, eight departments, and 50 public evaluation rows
 - Citations, append-only audit evidence, and persisted evaluation runs
-- Reproducible 50-row public evaluation and T1–T8 permission gates
+- Reproducible 50-row Public_Evaluation score and 15 rendered permission gates
+- Per-user sticky question history stored in PostgreSQL
+- Restricted denial responses with no source ID, title, classification, snippet, answer, or citation
 - COP-compatible My Tasco staff and organization facade, OpenAPI contract, REST examples, and Dart adapter
 
 ## Architecture
@@ -50,7 +53,9 @@ The starter deliberately keeps the first deployment small:
 
 For enterprise-knowledge queries, the API resolves the supplied demo user ID against the server-owned user table. Subsidiary, classification, role, and department predicates run in SQL before lexical or vector ranking. Only authorized chunks can enter deterministic answer construction or optional model context.
 
-The 40 canonical knowledge sources preserve the Vietnamese `content_vi` and document metadata from `ai_workspace_dataset_vietnamese_participants.xlsm`. A separately labelled 41st source and persona exist only to demonstrate cross-subsidiary isolation; they are never represented as challenge-provided data. The participant workbook itself states that all records are synthetic.
+The 40 sponsor knowledge sources preserve the Vietnamese `content_vi` and metadata from `ai_workspace_dataset_vietnamese_participants.xlsm`. They are supplemented by 15 clearly labelled property-management sources. Five of those sources carry reviewed official Vietnam context URLs for accounting, e-invoices, housing, and apartment management. The configured provenance path is Apify Website Content Crawler; `apifyRunVerified` remains `false` until a real `APIFY_TOKEN` run is performed, so seed metadata never fabricates crawl evidence.
+
+The COP headers, staff entities, organization tree, success envelope, and request IDs mirror the supplied **My Tasco API documentation**. The pitch can therefore state that the PoC is shaped as a deployable My Tasco workspace integration, while the current authentication tokens remain deterministic demo tokens.
 
 For a production-sized corpus, move raw objects to S3 or Vercel Blob, upload directly with signed URLs, and keep only metadata, extracted text, chunks, and vectors in PostgreSQL.
 
@@ -105,6 +110,7 @@ Set these environment variables for Preview and Production:
 | `CORS_ORIGIN` | No | Only needed when the API is called from another origin |
 | `ANTHROPIC_API_KEY` | No | Enables OCR for scanned PDFs and images |
 | `ANTHROPIC_OCR_MODEL` | No | OCR-capable model override |
+| `APIFY_TOKEN` | Context refresh only | Runs the official-source crawl; seed metadata stays unverified when absent |
 | `LLM_PROVIDER` | Bedrock use | Set to `bedrock` |
 | `AWS_REGION` | Bedrock use | Bedrock region; configured as `us-east-1` |
 | `AWS_ACCESS_KEY_ID` | Vercel Bedrock use | IAM access key stored as a Vercel secret |
@@ -136,10 +142,13 @@ Run migrations before opening the deployed application. Migrations are intention
 | `GET` | `/api/v1/meta` | Secure knowledge runtime and corpus counts |
 | `GET` | `/api/v1/workspace/seed-world` | Safe demo identities, source metadata, and question prompts; no source answers |
 | `POST` | `/api/v1/workspace/ask` | Permission-filtered grounded answer or refusal |
+| `GET` | `/api/v1/workspace/ask?userId=…` | Sticky thread summaries for the resolved identity |
+| `GET` | `/api/v1/workspace/ask/:threadId` | Resume one identity-owned thread |
 | `POST` | `/api/v1/workspace/ask/by-role` | Compare the same question across canonical personas |
+| `GET` | `/api/v1/workspace/examples` | Rendered property-management example Q&A deliverable |
 | `GET` | `/api/v1/workspace/documents/:id` | Authorized source detail or denial evidence |
 | `GET` | `/api/v1/workspace/search` | Permission-prefiltered hybrid retrieval |
-| `POST` | `/api/v1/workspace/permission-test` | Run T1–T8 permission cases |
+| `POST` | `/api/v1/workspace/permission-test` | Run sponsor and property-management permission cases |
 | `GET/POST` | `/api/v1/workspace/eval` | Run and optionally persist the 50-row evaluation |
 | `GET` | `/api/v1/workspace/retrieval-trace` | Replay append-only audit evidence |
 | `POST` | `/mytasco/v1/staff/search` | COP-compatible deterministic staff directory search |
@@ -164,7 +173,14 @@ pnpm build
 pnpm verify:knowledge
 ```
 
-The knowledge verification checks all 40 workbook-backed Vietnamese sources, exact leave-policy content, SQL-level Restricted denial, cross-subsidiary isolation, the same-question Employee/Executive flow, 50/50 public evaluation, T1–T8, zero permission leaks, zero Restricted context hits, and persisted audit evidence.
+The knowledge verification checks all 40 workbook-backed Vietnamese sources, the 15 property-management sources, exact leave-policy content, SQL-level Restricted denial, subsidiary isolation, the same-question Employee/Executive flow, 50/50 Public_Evaluation, 15/15 permission cases, zero permission leaks, zero Restricted context hits, and persisted audit evidence.
+
+## 60-second demo
+
+1. Start as **Accounting · Employee** and ask: “What is the property month-end close sequence?” Show the grounded answer and authorized citation.
+2. Ask: “How is the property portfolio performing this month?” Show the Accounting-scoped result, then switch to **Executive** and show the deeper, correctly authorized result.
+3. Switch back to **Employee** and ask: “What property acquisition or M&A targets are under review?” Show the refusal and proof: zero authorized chunks, zero Restricted model context, and no source metadata.
+4. Switch identities once more to show each persona’s sticky history is distinct. Close on **Evidence** with 13 Q&As, 15 permission cases, and 50/50 sponsor evaluation.
 
 ## Where to customize
 

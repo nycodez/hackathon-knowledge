@@ -2,7 +2,7 @@ import cors from 'cors'
 import express, { type ErrorRequestHandler, type NextFunction, type Request, type Response } from 'express'
 import multer from 'multer'
 import { optionalEnv } from './config/env.js'
-import { ensureSeed } from './db/ensure_seed.js'
+import { DatabaseSchemaOutdatedError, ensureSeed } from './db/ensure_seed.js'
 import apiRoutes from './routes/api.routes.js'
 import myTascoRoutes from './routes/mytasco.routes.js'
 import workspaceRoutes from './routes/workspace.routes.js'
@@ -39,6 +39,12 @@ const errorHandler: ErrorRequestHandler = (
     return res.status(413).json({
       success: false,
       errors: [{ rule: 'file_size', field: 'file', message: 'Files must be 4 MB or smaller' }],
+    })
+  }
+  if (error instanceof DatabaseSchemaOutdatedError) {
+    return res.status(503).json({
+      success: false,
+      errors: [{ rule: 'database_schema', field: 'migration', message: error.message }],
     })
   }
   return res.status(500).json({

@@ -43,14 +43,17 @@ export default class KnowledgeRetrievalService {
 
   async answerQuestion(userId: string, question: string, data: TascoSeedData, language: 'en' | 'vi' = 'en'): Promise<TascoAskResponse> {
     const principal = await this.assertUserScope(userId, data)
-    const matchedQuestion = this.findQuestion(question, data)
+    const matchedQuestion = this.findQuestion(question, data, principal)
     const response = matchedQuestion
       ? this.answerKnownQuestion(principal, matchedQuestion, data, language)
       : await this.answerRetrievedQuestion(principal, question, data, language)
     const strengthened = await this.withAuthorizedCitation(principal, response, language)
     const generation = await this.withClaudeAnswer(principal, question, strengthened, language)
     const answered = generation.response
-    const edgePath = await this.kg.permissionPath(answered.trace.document.id, principal.userId).catch(() => [])
+    const auditedDocumentId = answered.trace.document?.id ?? null
+    const edgePath = auditedDocumentId
+      ? await this.kg.permissionPath(auditedDocumentId, principal.userId).catch(() => [])
+      : []
 
     await this.recordAudit({
       tenantId: principal.tenantId,
@@ -66,7 +69,7 @@ export default class KnowledgeRetrievalService {
         question,
         matchedQuestion: this.questionLabel(answered.question),
         state: answered.state,
-        documentId: answered.trace.document.id,
+        documentId: auditedDocumentId,
         decision: answered.trace.decision,
         citationChunkId: answered.citation?.chunkId ?? null,
         llm: answered.answer === strengthened.answer ? 'deterministic' : 'claude',
@@ -86,7 +89,7 @@ export default class KnowledgeRetrievalService {
       },
     })
 
-    return answered
+    return answered.state === 'permission_refusal' ? this.redactDeniedResponse(answered) : answered
   }
 
   async documentDetail(
@@ -99,11 +102,7 @@ export default class KnowledgeRetrievalService {
 
     const authorized = await this.documents.findAuthorizedByDocumentId(principal, documentId, language)
     if (authorized) return this.buildDocumentDetail(principal, authorized, data)
-    const document = await this.documents.findMetadataByDocumentId(principal.tenantId, documentId)
-    if (!document || document.subsidiaryId !== principal.subsidiaryId) {
-      throw new Error(`Unknown Tasco document: ${documentId}`)
-    }
-    return this.buildDocumentDetail(principal, { document, chunkId: '', content: '' }, data)
+    throw new Error(`Unknown Tasco document: ${documentId}`)
   }
 
   async answerQuestionByRole(
@@ -112,13 +111,14 @@ export default class KnowledgeRetrievalService {
     data: TascoSeedData,
     language: 'en' | 'vi' = 'en'
   ): Promise<TascoByRoleAskResult> {
-    const uniqueUserIds = [...new Set(data.personaIds)]
+    const selectedDepartment = data.personas.find((persona) => persona.id === _requestedUserIds?.[0])?.department ?? 'FIN'
+    const uniqueUserIds = [`PM-${selectedDepartment}-EMP`, `PM-${selectedDepartment}-EXEC`]
     const results = await Promise.all(
       uniqueUserIds.map(async (userId) => {
         await this.assertUserScope(userId, data)
         return {
           user: findUser(userId, data),
-          response: await this.answerQuestion(userId, question, data, language),
+          response: this.comparisonSafeResponse(await this.answerQuestion(userId, question, data, language), language),
         }
       })
     )
@@ -197,7 +197,7 @@ export default class KnowledgeRetrievalService {
       const rows = await this.audit.listRecent({
         tenantId,
         actorUserId: principal?.userId,
-        documentId: filters.documentId,
+        documentId: principal?.role === 'Executive' ? filters.documentId : undefined,
         eventType: filters.eventType,
         limit,
       })
@@ -213,7 +213,7 @@ export default class KnowledgeRetrievalService {
           events: rows.length,
           persisted: true,
         },
-        events: rows.map((row) => this.toAuditReplayEvent(row)),
+        events: rows.map((row) => this.toAuditReplayEvent(row, principal)),
       }
     } catch {
       return {
@@ -265,7 +265,10 @@ export default class KnowledgeRetrievalService {
   }
 
   async linkMessage(messageId: string, response: TascoAskResponse): Promise<void> {
-    const edgePath = await this.kg.permissionPath(response.trace.document.id, response.trace.user.id).catch(() => [])
+    const documentId = response.trace.document?.id ?? null
+    const edgePath = documentId
+      ? await this.kg.permissionPath(documentId, response.trace.user.id).catch(() => [])
+      : []
     await this.recordAudit({
       tenantId: 'tasco-demo',
       actorUserId: response.trace.user.id,
@@ -273,7 +276,7 @@ export default class KnowledgeRetrievalService {
       enforcementPoint: response.trace.enforcementPoint,
       metadata: {
         messageId,
-        documentId: response.trace.document.id,
+        documentId,
         decision: response.trace.decision,
         rule: response.trace.rule,
         citationChunkId: response.citation?.chunkId ?? null,
@@ -292,11 +295,16 @@ export default class KnowledgeRetrievalService {
     }
   }
 
-  private findQuestion(rawQuestion: string, data: TascoSeedData): TascoQuestion | undefined {
+  private findQuestion(rawQuestion: string, data: TascoSeedData, principal: Principal): TascoQuestion | undefined {
     const normalized = normalizeQuestion(rawQuestion)
-    return data.questions.find((question) =>
+    const matches = data.questions.filter((question) =>
       normalizeQuestion(question.questionEn) === normalized || normalizeQuestion(question.questionVi) === normalized
     )
+    if (normalized === normalizeQuestion('How is the property portfolio performing this month?') ||
+        normalized === normalizeQuestion('Danh mục bất động sản tháng này hoạt động thế nào?')) {
+      return matches.find((question) => question.documentId === (principal.role === 'Executive' ? 'PM-EXEC-002' : 'PM-DIR-001'))
+    }
+    return matches[0]
   }
 
   private answerKnownQuestion(
@@ -565,6 +573,47 @@ export default class KnowledgeRetrievalService {
     return detail
   }
 
+  private redactDeniedResponse(response: TascoAskResponse): TascoAskResponse {
+    return {
+      ...response,
+      question: {
+        ...response.question,
+        documentId: 'REDACTED',
+        answerEn: '',
+        answerVi: '',
+      },
+      citation: undefined,
+      trace: {
+        ...response.trace,
+        document: undefined,
+        target: 'protected_source_redacted',
+        proof: {
+          ...response.trace.proof,
+          authorizedChunks: 0,
+          restrictedContextSentToModel: 0,
+          targetDisclosed: false,
+        },
+      },
+    }
+  }
+
+  private comparisonSafeResponse(response: TascoAskResponse, language: 'en' | 'vi'): TascoAskResponse {
+    if (response.state !== 'answered') return response
+    return {
+      ...response,
+      answer: language === 'vi'
+        ? 'Có câu trả lời được phép khi chuyển sang danh tính này.'
+        : 'An authorized answer is available after switching to this identity.',
+      question: { ...response.question, documentId: 'REDACTED', answerEn: '', answerVi: '' },
+      citation: undefined,
+      trace: {
+        ...response.trace,
+        document: undefined,
+        proof: { ...response.trace.proof, targetDisclosed: false },
+      },
+    }
+  }
+
   private async recordAudit(event: Parameters<AuditRepository['record']>[0]): Promise<void> {
     // Retrieval evidence is part of the security boundary. If it cannot be
     // persisted, fail the operation instead of returning an unaudited answer.
@@ -598,14 +647,23 @@ export default class KnowledgeRetrievalService {
     }
   }
 
-  private toAuditReplayEvent(row: RetrievalAuditEventRow): TascoAuditReplayEvent {
+  private toAuditReplayEvent(row: RetrievalAuditEventRow, principal: Principal | null = null): TascoAuditReplayEvent {
+    const metadata = principal?.role !== 'Executive' && row.event_type === 'permission_denied'
+      ? {
+          state: 'permission_refusal',
+          decision: 'deny',
+          retrieval: 'blocked_before_retrieval',
+          authorizedChunks: 0,
+          restrictedContextSentToModel: 0,
+        }
+      : row.metadata
     return {
       id: row.id,
       tenantId: row.tenant_id,
       actorUserId: row.actor_user_id,
       eventType: row.event_type,
       enforcementPoint: row.enforcement_point,
-      metadata: row.metadata,
+      metadata,
       createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
     }
   }

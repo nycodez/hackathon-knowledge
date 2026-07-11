@@ -1,4 +1,11 @@
 import { WORKBOOK_PUBLIC_EVALUATION, WORKBOOK_USERS } from './tasco_workbook.js'
+import {
+  createPropertyManagementPersonas,
+  PROPERTY_MANAGEMENT_BUSINESS_UNIT,
+  PROPERTY_MANAGEMENT_DOCUMENTS,
+  PROPERTY_MANAGEMENT_PERMISSION_CASES,
+  PROPERTY_MANAGEMENT_QUESTIONS,
+} from './property_management.js'
 
 export const TRACK_CODE = 'tasco' as const
 export const TRACK_TITLE = 'Tasco Enterprise Knowledge' as const
@@ -63,6 +70,11 @@ export interface TascoUser {
   subsidiaryId: string
   email?: string
   status?: 'Active' | 'Inactive'
+  identityType?: 'sponsor_user' | 'demo_persona'
+  displayDepartment?: string
+  businessUnitId?: string
+  businessUnitName?: string
+  provenance?: string
 }
 
 export interface TascoDocument {
@@ -72,6 +84,9 @@ export interface TascoDocument {
   department: string
   classification: TascoClassification
   subsidiaryId: string
+  provenance?: 'sponsor-workbook' | 'curated-demo' | 'official-context-reviewed' | 'synthetic-isolation'
+  sourceUrls?: string[]
+  ingestionProvider?: 'sponsor-workbook' | 'curated' | 'apify-website-content-crawler'
 }
 
 export interface TascoQuestion {
@@ -110,6 +125,9 @@ export interface TascoPublicEvalRow {
   category?: string
   userRole?: TascoRole
   userDepartment?: string
+  canonicalRole?: TascoRole
+  canonicalDepartment?: string
+  identityMismatch?: boolean
   questionVi?: string
   difficulty?: 'Easy' | 'Medium' | 'Hard'
 }
@@ -117,6 +135,7 @@ export interface TascoPublicEvalRow {
 export interface TascoSeedData {
   departments: TascoDepartment[]
   users: TascoUser[]
+  personas: TascoUser[]
   documents: TascoDocument[]
   questions: TascoQuestion[]
   subsidiaries: TascoSubsidiary[]
@@ -128,6 +147,7 @@ export interface TascoSeedData {
 export interface TascoWorkspaceBootstrap {
   departments: TascoDepartment[]
   users: TascoUser[]
+  personas: TascoUser[]
   documents: TascoDocument[]
   questions: TascoQuestionPrompt[]
   subsidiaries: TascoSubsidiary[]
@@ -146,11 +166,19 @@ export interface TascoPermissionResult {
 
 export interface PermissionTrace {
   user: TascoUser
-  document: TascoDocument
+  document?: TascoDocument
+  target: 'authorized_source' | 'protected_source_redacted'
   decision: PermissionDecision
   rule: string
   enforcementPoint: string
   sameQuestionByPersona: Array<{ user: TascoUser; decision: PermissionDecision }>
+  proof: {
+    identitySource: 'server_database'
+    retrievalFilter: 'sql_pre_filter'
+    authorizedChunks: number
+    restrictedContextSentToModel: number
+    targetDisclosed: boolean
+  }
 }
 
 export interface TascoSearchResult {
@@ -214,6 +242,25 @@ export interface TascoThreadResponse {
   }>
 }
 
+export interface TascoThreadSummary {
+  id: string
+  userId: string
+  language: 'en' | 'vi'
+  title: string
+  preview: string
+  messageCount: number
+  updatedAt: string
+}
+
+export interface TascoExampleQa {
+  id: string
+  departmentId: TascoDepartmentId
+  classification: TascoClassification
+  question: string
+  answer: string
+  citation: TascoCitation
+}
+
 export type TascoAuditEventType =
   | 'retrieval_query'
   | 'permission_denied'
@@ -269,6 +316,7 @@ export interface TascoPublicEvalResult {
   user: TascoUser
   documents: TascoDocument[]
   answerType: TascoEvalAnswerType
+  identityMismatch?: boolean
 }
 
 export interface TascoEvalReport {
@@ -348,10 +396,26 @@ const departmentAliases: Record<string, TascoDepartmentId> = {
   LEGAL: 'LEGAL',
   'Executive Office': 'EXEC',
   EXEC: 'EXEC',
+  'Công ty': 'COMP',
+  'Nhân sự': 'HR',
+  'Tài chính': 'FIN',
+  'Sản phẩm': 'PROD',
+  'Kỹ thuật': 'ENG',
+  'Vận hành': 'OPS',
+  'Pháp chế & Tuân thủ': 'LEGAL',
+  'Ban Điều hành': 'EXEC',
 }
 
 export function deptId(raw: string): TascoDepartmentId {
-  return departmentAliases[raw] ?? 'COMP'
+  const normalized = normalizeDepartment(raw)
+  const department = Object.entries(departmentAliases)
+    .find(([alias]) => normalizeDepartment(alias) === normalized)?.[1]
+  if (!department) throw new Error(`Unknown Tasco department: ${raw}`)
+  return department
+}
+
+function normalizeDepartment(value: string): string {
+  return value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim().toLowerCase()
 }
 
 export function createTascoDemoData(): TascoSeedData {
@@ -396,38 +460,32 @@ export function createTascoDemoData(): TascoSeedData {
     { id: 'DOC038', titleVi: 'Ưu tiên kinh doanh năm 2026', titleEn: '2026 Business Priorities', department: 'Executive Office', classification: 'Restricted', subsidiaryId: 'DNP-WATER' },
     { id: 'DOC039', titleVi: 'Kế hoạch M&A giả lập', titleEn: 'M&A Plan (Simulated)', department: 'Executive Office', classification: 'Restricted', subsidiaryId: 'DNP-WATER' },
     { id: 'DOC040', titleVi: 'Báo cáo chuyển đổi số nội bộ', titleEn: 'Internal Digital Transformation Report', department: 'Executive Office', classification: 'Restricted', subsidiaryId: 'DNP-WATER' },
-    { id: 'TLD001', titleVi: 'Chính sách thử việc (Tasco Logistics - bản sao đồng bộ)', titleEn: 'Probation Policy (Tasco Logistics - synced copy)', department: 'Company', classification: 'Internal', subsidiaryId: 'TASCO-LOGISTICS-DEMO' },
   ]
 
   const users: TascoUser[] = WORKBOOK_USERS.map((user) => ({
     ...user,
     subsidiaryId: 'DNP-WATER',
+    identityType: 'sponsor_user',
+    provenance: 'Users sheet canonical identity',
   }))
-  users.push({
-    id: 'TLU001',
-    name: 'Lâm Gia Bảo',
-    department: 'Company',
-    role: 'Employee',
-    subsidiaryId: 'TASCO-LOGISTICS-DEMO',
-    email: 'tlu001@synthetic.local',
-    status: 'Active',
-  })
+  const personas = createPropertyManagementPersonas(departments)
 
   return {
     departments,
     users,
-    documents,
-    questions,
+    personas,
+    documents: [...documents.map((document) => ({ ...document, provenance: 'sponsor-workbook' as const })), ...PROPERTY_MANAGEMENT_DOCUMENTS],
+    questions: [...questions, ...PROPERTY_MANAGEMENT_QUESTIONS],
     subsidiaries,
-    personaIds: ['U001', 'U004', 'U003', 'U007'],
-    permissionCases,
+    personaIds: ['PM-FIN-EMP', 'PM-FIN-EXEC'],
+    permissionCases: [...permissionCases.filter((testCase) => testCase.id !== 'T8'), ...PROPERTY_MANAGEMENT_PERMISSION_CASES],
     publicEvaluation,
   }
 }
 
 const subsidiaries: TascoSubsidiary[] = [
   { id: 'DNP-WATER', name: 'DNP Water', metaEn: '40 documents · 32 users · seed dataset', metaVi: '40 tài liệu · 32 người dùng · dữ liệu gốc' },
-  { id: 'TASCO-LOGISTICS-DEMO', name: 'Tasco Logistics', metaEn: 'Synthetic clone - demonstrates 150+ subsidiary isolation', metaVi: 'Bản sao tổng hợp - minh họa cách ly 150+ công ty con' },
+  { id: PROPERTY_MANAGEMENT_BUSINESS_UNIT.id, name: PROPERTY_MANAGEMENT_BUSINESS_UNIT.name, metaEn: 'Property-management Accounting demo · 32 role/department personas', metaVi: 'Demo Kế toán quản lý bất động sản · 32 persona theo vai trò/phòng ban' },
 ]
 
 const questions: TascoQuestion[] = [
@@ -517,10 +575,15 @@ const permissionCases: TascoPermissionCase[] = [
 const publicEvaluation: TascoPublicEvalRow[] = WORKBOOK_PUBLIC_EVALUATION.map((row) => ({
   ...row,
   documentIds: [...row.documentIds],
+  canonicalRole: WORKBOOK_USERS.find((user) => user.id === row.userId)?.role,
+  canonicalDepartment: WORKBOOK_USERS.find((user) => user.id === row.userId)?.department,
+  identityMismatch: WORKBOOK_USERS.some((user) => user.id === row.userId && (
+    user.role !== row.userRole || deptId(user.department) !== deptId(row.userDepartment ?? user.department)
+  )),
 }))
 
 export function findUser(userId: string, data = createTascoDemoData()): TascoUser {
-  const user = data.users.find((candidate) => candidate.id === userId)
+  const user = [...data.users, ...data.personas].find((candidate) => candidate.id === userId)
   if (!user) throw new Error(`Unknown Tasco user: ${userId}`)
   return user
 }
@@ -577,6 +640,7 @@ export function buildTrace(user: TascoUser, document: TascoDocument, data = crea
   return {
     user,
     document,
+    target: 'authorized_source',
     decision,
     rule: permissionRuleFor(document),
     enforcementPoint: document.subsidiaryId === user.subsidiaryId ? 'retrieval pre-filter' : 'subsidiary pre-filter',
@@ -587,14 +651,24 @@ export function buildTrace(user: TascoUser, document: TascoDocument, data = crea
         decision: canAccess(persona, document) ? 'allow' : 'deny',
       }
     }),
+    proof: {
+      identitySource: 'server_database',
+      retrievalFilter: 'sql_pre_filter',
+      authorizedChunks: decision === 'allow' ? 1 : 0,
+      restrictedContextSentToModel: 0,
+      targetDisclosed: decision === 'allow',
+    },
   }
 }
 
 export function answerQuestion(userId: string, questionText: string, data = createTascoDemoData()): TascoAskResponse {
   const user = findUser(userId, data)
   const normalized = questionText.trim().toLowerCase()
+  const exactMatches = data.questions.filter((candidate) => candidate.questionEn.toLowerCase() === normalized || candidate.questionVi.toLowerCase() === normalized)
   const question =
-    data.questions.find((candidate) => candidate.questionEn.toLowerCase() === normalized || candidate.questionVi.toLowerCase() === normalized) ??
+    (exactMatches.length > 1
+      ? exactMatches.find((candidate) => candidate.documentId === (user.role === 'Executive' ? 'PM-EXEC-002' : 'PM-DIR-001'))
+      : exactMatches[0]) ??
     data.questions.find((candidate) => candidate.questionEn.toLowerCase().includes(normalized) || candidate.questionVi.toLowerCase().includes(normalized)) ??
     data.questions[0]
   const document = findDocument(question.documentId, data)
@@ -604,8 +678,13 @@ export function answerQuestion(userId: string, questionText: string, data = crea
     return {
       state: 'permission_refusal',
       answer: 'You do not have permission to access this document. The restricted chunk was blocked before retrieval and never sent to the model.',
-      question,
-      trace,
+      question: { ...question, documentId: 'REDACTED', answerEn: '', answerVi: '' },
+      trace: {
+        ...trace,
+        document: undefined,
+        target: 'protected_source_redacted',
+        proof: { ...trace.proof, authorizedChunks: 0, restrictedContextSentToModel: 0, targetDisclosed: false },
+      },
     }
   }
 
@@ -679,6 +758,7 @@ export function runPublicEvaluation(data = createTascoDemoData()): TascoPublicEv
       user,
       documents,
       answerType: row.answerType,
+      identityMismatch: row.identityMismatch,
     }
   })
 }

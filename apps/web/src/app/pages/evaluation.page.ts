@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import type { TascoEvalReport } from '@hackathon/shared'
+import type { TascoEvalReport, TascoExampleQa } from '@hackathon/shared'
 import { finalize, forkJoin } from 'rxjs'
 import { ApiService, type KnowledgeEvalRun } from '../core/api.service'
 
@@ -26,7 +26,7 @@ import { ApiService, type KnowledgeEvalRun } from '../core/api.service'
       } @else if (report(); as result) {
         <div class="metric-grid evaluation-metrics">
           <article class="metric-card"><span>Public evaluation</span><strong>{{ result.score }}/{{ result.total }}</strong><small>48/{{ result.total }} minimum gate</small></article>
-          <article class="metric-card"><span>Permission cases</span><strong>{{ passedCases(result) }}/{{ result.caseResults.length }}</strong><small>T1–T8 expected</small></article>
+          <article class="metric-card"><span>Permission cases</span><strong>{{ passedCases(result) }}/{{ result.caseResults.length }}</strong><small>Sponsor + property-management cases</small></article>
           <article class="metric-card"><span>Unauthorized leaks</span><strong>{{ result.leaks }}</strong><small>Chunks and citations</small></article>
           <article class="metric-card"><span>Restricted context</span><strong>{{ result.metrics?.restrictedContextHits ?? 0 }}</strong><small>Model-context hits</small></article>
         </div>
@@ -42,7 +42,23 @@ import { ApiService, type KnowledgeEvalRun } from '../core/api.service'
 
         <article class="scope-card evaluation-card">
           <div class="section-heading">
-            <div><span class="eyebrow">T1–T8</span><h2>Permission cases</h2></div>
+            <div><span class="eyebrow">Required deliverable · rendered in app</span><h2>Property-management example Q&amp;A</h2></div>
+            <span class="status-chip neutral">{{ examples().length }} grounded answers</span>
+          </div>
+          <div class="example-qa-grid">
+            @for (example of examples(); track example.id) {
+              <article>
+                <span class="classification" [class.internal]="example.classification === 'Internal'" [class.confidential]="example.classification === 'Confidential'">{{ example.departmentId }} · {{ example.classification }}</span>
+                <h3>{{ example.question }}</h3><p>{{ example.answer }}</p>
+                <small>{{ example.citation.sourceId }} · {{ example.citation.title }}</small>
+              </article>
+            }
+          </div>
+        </article>
+
+        <article class="scope-card evaluation-card">
+          <div class="section-heading">
+            <div><span class="eyebrow">Live SQL gates</span><h2>Permission cases</h2></div>
             <span class="status-chip" [class.allowed]="passedCases(result) === result.caseResults.length" [class.denied]="passedCases(result) !== result.caseResults.length">
               {{ passedCases(result) === result.caseResults.length ? 'All passing' : 'Gate failed' }}
             </span>
@@ -78,7 +94,7 @@ import { ApiService, type KnowledgeEvalRun } from '../core/api.service'
                 @for (item of result.publicResults; track item.questionId) {
                   <tr>
                     <td class="eval-question"><strong>{{ item.questionId }}</strong><small>{{ item.questionVi ?? item.category ?? 'Workbook evaluation prompt' }}</small></td>
-                    <td>{{ item.user.id }}</td>
+                    <td>{{ item.user.id }} @if (item.identityMismatch) { <span class="status-chip neutral">snapshot corrected</span> }</td>
                     <td>{{ sourceIds(item) }}</td>
                     <td>{{ item.answerType }}</td>
                     <td>{{ item.expected }}</td>
@@ -99,6 +115,7 @@ export class EvaluationPage implements OnInit {
   private readonly destroyRef = inject(DestroyRef)
   protected readonly report = signal<TascoEvalReport | null>(null)
   protected readonly latest = signal<KnowledgeEvalRun | null>(null)
+  protected readonly examples = signal<TascoExampleQa[]>([])
   protected readonly loading = signal(true)
   protected readonly running = signal(false)
   protected readonly error = signal('')
@@ -110,13 +127,14 @@ export class EvaluationPage implements OnInit {
   protected load(): void {
     this.loading.set(true)
     this.error.set('')
-    forkJoin({ report: this.api.knowledgeEval(), latest: this.api.latestKnowledgeEval() }).pipe(
+    forkJoin({ report: this.api.knowledgeEval(), latest: this.api.latestKnowledgeEval(), examples: this.api.knowledgeExamples() }).pipe(
       takeUntilDestroyed(this.destroyRef),
       finalize(() => this.loading.set(false))
     ).subscribe({
-      next: ({ report, latest }) => {
+      next: ({ report, latest, examples }) => {
         this.latest.set(latest)
         this.report.set(latest?.report ?? report)
+        this.examples.set(examples)
       },
       error: (error: unknown) => this.error.set(this.api.message(error)),
     })

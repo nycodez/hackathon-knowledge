@@ -74,13 +74,19 @@ paths:
     get:
       summary: Search only knowledge chunks authorized for the selected demo identity
       parameters:
-        - { name: userId, in: query, required: true, schema: { type: string, pattern: '^U[0-9]{3}$' } }
+        - { name: userId, in: query, required: true, schema: { type: string, pattern: '^(U[0-9]{3}|PM-(COMP|HR|FIN|PROD|ENG|OPS|LEGAL|EXEC)-(EMP|MGR|DIR|EXEC))$' } }
         - { name: q, in: query, required: true, schema: { type: string } }
         - { name: language, in: query, schema: { type: string, enum: [en, vi] } }
       responses:
         '200':
           description: Authorized documents, citations, and hidden-candidate count
   /api/v1/workspace/ask:
+    get:
+      summary: List sticky question threads owned by one server-resolved identity
+      parameters:
+        - { name: userId, in: query, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Identity-owned thread summaries }
     post:
       summary: Generate a grounded answer after SQL-level ACL filtering
       requestBody:
@@ -91,12 +97,23 @@ paths:
               type: object
               required: [userId, question]
               properties:
-                userId: { type: string, pattern: '^U[0-9]{3}$' }
+                userId: { type: string }
                 question: { type: string, minLength: 1 }
                 language: { type: string, enum: [en, vi], default: vi }
+                threadId: { type: string, format: uuid }
       responses:
         '200':
           description: Grounded answer or explicit permission refusal with enforcement trace
+  /api/v1/workspace/ask/by-role:
+    post:
+      summary: Compare the same question as Employee and Executive in one department
+      responses:
+        '200': { description: Two independently permission-filtered answers }
+  /api/v1/workspace/examples:
+    get:
+      summary: Return the rendered property-management example Q&A deliverable
+      responses:
+        '200': { description: At least 10 grounded non-Restricted examples }
 components:
   securitySchemes:
     bearerAuth:

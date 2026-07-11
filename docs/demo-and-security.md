@@ -1,56 +1,53 @@
-# Demo, answers, and access-control evidence
+# Demo and access-control evidence
 
-## Ten grounded example questions and answers
+## Demo thesis
 
-All facts below come from the Vietnamese `content_vi` field in the supplied synthetic participant workbook. The live assistant returns a citation and applies the caller's permission before retrieving source text.
+**Who:** a Tasco employee in Accounting within property management. **Goal:** get an accurate, permission-safe answer fast. **Proof:** the same question returns correctly scoped depth by role, a Restricted source is provably invisible, and each server-resolved identity remembers its own questions.
 
-| # | Question | Grounded answer | Source | Required access |
+## Grounded property-management examples
+
+The app renders these examples from `GET /api/v1/workspace/examples`; they are not README-only claims.
+
+| # | Question | Grounded answer (summary) | Source | Scope |
 | --- | --- | --- | --- | --- |
-| 1 | Chính sách thử việc là gì? | Thời gian thử việc tiêu chuẩn là 60 ngày lịch. | DOC001 | Public |
-| 2 | Nhân viên được bao nhiêu ngày nghỉ phép năm? | Nhân viên chính thức có 15 ngày nghỉ phép năm có lương sau khi hoàn thành thử việc. | DOC002 | Internal |
-| 3 | Cần làm gì trước khi đặt chuyến công tác? | Quản lý trực tiếp phải phê duyệt trước khi đặt vé hoặc khách sạn. | DOC003 | Internal |
-| 4 | Chi phí của nhân viên được hoàn ứng như thế nào? | Nộp trong hệ thống trong 10 ngày làm việc; khoản trên 200.000 VND cần hóa đơn hoặc chứng từ hợp lệ. | DOC011 | Internal |
-| 5 | Khung lương Product Manager là bao nhiêu? | Dải tham khảo là 35.000.000–60.000.000 VND/tháng tùy cấp độ và kinh nghiệm. | DOC007 | HR or Executive |
-| 6 | SLA mục tiêu cho dịch vụ quan trọng là bao nhiêu? | Mục tiêu là 99,5% và phải có dashboard theo dõi. | DOC027 | Operations or Executive |
-| 7 | Dữ liệu cá nhân phải được xử lý như thế nào? | Cần cơ sở pháp lý phù hợp hoặc sự đồng ý và chỉ thu thập dữ liệu cần thiết cho mục đích đã thông báo. | DOC031 | Internal |
-| 8 | Restricted nghĩa là loại thông tin như thế nào? | Đây là thông tin nhạy cảm cao, chỉ dành cho Ban Điều hành hoặc người được ủy quyền. | DOC034 | Internal |
-| 9 | Ưu tiên chiến lược của công ty năm 2026 là gì? | Mở rộng hệ sinh thái số, tăng trưởng dịch vụ giá trị gia tăng và nâng cao năng lực AI nội bộ. | DOC036 | Executive |
-| 10 | Kế hoạch M&A năm nay có gì? | Kế hoạch tập trung vào công ty có năng lực dữ liệu, AI hoặc dịch vụ số bổ trợ. | DOC039 | Executive |
+| 1 | Who owns the property-management operating model? | Property Operations owns the model; Accounting owns billing, close, reconciliation, and financial controls. | PM-COMP-001 | Internal |
+| 2 | What should a new property accountant complete in week one? | Access, chart mapping, property assignment, segregation-of-duties review, and a supervised close rehearsal. | PM-HR-001 | Internal |
+| 3 | What is the property month-end close sequence? | Freeze billing, reconcile bank/AR, post approved accruals, reconcile owner/fund balances, review variances, lock. | ACC-PM-001 | Internal |
+| 4 | How is the monthly management fee calculated? | Approved rate × billable usable area, less approved concessions, with tax and e-invoice validation. | ACC-PM-002 | Internal |
+| 5 | How are shared property costs allocated? | Direct costs first; shared costs require an approved driver, period, and reviewer. | ACC-PM-003 | Internal |
+| 6 | What controls apply before a Vietnam e-invoice? | Validate identity, tax code, period, amount, tax, approval, sequence, and correction evidence. | ACC-PM-004 | Internal |
+| 7 | How is the maintenance fund reconciled? | Dedicated bank balance to owner receipts and authorized spend; investigate variance and keep operating cash separate. | ACC-PM-005 | Finance Confidential |
+| 8 | What evidence is required for vendor payment? | Approved PO/contract, acceptance, valid invoice, and independent approval of exceptions. | ACC-PM-006 | Finance Confidential |
+| 9 | What must be tested before a billing release? | Rate, area, concessions, proration, tax, rounding, duplicates, audit fields, and rollback. | PM-PROD-001 | Product Confidential |
+| 10 | How are finance pipeline failures handled? | Quarantine, preserve immutable payload/correlation ID, reconcile control totals, and replay after Accounting approval. | PM-ENG-001 | Internal |
+| 11 | When is resident arrears handed to Accounting? | After ledger, notices, disputes, and payment-plan validation; Accounting reconciles the control account. | PM-OPS-001 | Internal |
+| 12 | What contract evidence must Accounting retain? | Signed agreement, approvals, scope, fee basis, acceptance, amendments, invoices, and retention class. | PM-LEGAL-001 | Internal |
+| 13 | How is the property portfolio performing this month? | Accounting sees collections, controllable cost, and arrears follow-up. | PM-DIR-001 | Finance Confidential |
 
-## Access-control enforcement
+An Executive asking question 13 is grounded instead in Restricted source `PM-EXEC-002`, which adds executive-only acquisition sensitivity and owner-margin forecasts.
 
-The browser may select a demo `userId`, but it cannot submit a role, department, or subsidiary claim. The API resolves those attributes from `tasco_users`, then applies the following SQL predicates before lexical ranking, vector ranking, citation construction, or model-context assembly:
+## Enforcement
 
-| Classification | Employee / Manager / Director | Executive |
-| --- | --- | --- |
-| Public | Allow in the same subsidiary | Allow in the same subsidiary |
-| Internal | Allow in the same subsidiary | Allow in the same subsidiary |
-| Confidential | Allow only for the owning department | Allow across departments |
-| Restricted | Deny | Allow |
+The browser submits only a demo identity ID. The API joins that ID to `tasco_users` or the separately labelled `tasco_demo_personas`; it never accepts browser-supplied role, department, or subsidiary claims. Public_Evaluation always joins to the 32 canonical Users-sheet rows. The workbook’s role/department fields are retained as source snapshots, and 18 role mismatches are visibly labelled “snapshot corrected.”
 
-Every query also requires `source.subsidiary_id = principal.subsidiary_id`. A denial returns no protected content, chunk identifier, citation, preview, or protected candidate count. The decision and enforcement point are written to the append-only retrieval audit log without storing the protected passage.
+Department input is normalized against the Departments dimension in English and Vietnamese. Unknown department names throw and fail closed.
 
-The `/mytasco/v1` facade is intentionally a deterministic mock for Flutter integration. It validates `X-App-Code: MYTASCO`, uses the COP envelope, echoes `X-Request-Id`, and accepts optional `demo-U001`–`demo-U032` Bearer tokens. Those tokens are not production authentication.
+SQL applies subsidiary, classification, role, and canonical department predicates before lexical/vector ranking. A Restricted denial returns:
 
-## Permission test cases
+- no source ID, title, classification, content, snippet, citation, or answer payload;
+- `authorizedChunks: 0`;
+- `restrictedContextSentToModel: 0`;
+- an append-only server audit containing the enforcement decision, not protected text.
 
-| Case | User | Source | Expected | Rule exercised |
-| --- | --- | --- | --- | --- |
-| T1 | U003 Product Director | DOC036 Restricted | Deny | Restricted is Executive-only |
-| T2 | U007 Executive | DOC036 Restricted | Allow | Executive access to Restricted |
-| T3 | U004 Engineering Employee | DOC007 HR Confidential | Deny | Confidential cross-department block |
-| T4 | U001 HR Employee | DOC007 HR Confidential | Allow | Confidential own-department access |
-| T5 | U002 Finance Manager | DOC002 Internal | Allow | Internal is available to all internal roles |
-| T6 | U003 Product Director | DOC034 Legal Internal | Allow | Internal does not impose a department restriction |
-| T7 | U001 HR Employee | DOC001 Public | Allow | Public is available to all canonical users |
-| T8 | U010 DNP Water user | TLD001 foreign-subsidiary Internal | Deny | Subsidiary isolation precedes classification |
+## Permission cases
 
-The public workbook evaluation adds 50 question/user/source combinations. The release gate is at least 48/50 correct decisions, all eight explicit permission tests passing, and zero unauthorized chunks or citations.
+Fifteen cases render in Evidence: seven sponsor cases plus eight property-management cases. The focused cases cover own-department Confidential allow, cross-department Confidential deny, Director cross-department deny, Executive cross-department allow, Employee Restricted deny, Executive Restricted allow, and sponsor/property-business-unit isolation.
 
-## Data provenance
+The release gates are 50/50 Public_Evaluation, 15/15 permission cases, zero unauthorized leaks, and zero Restricted context hits for a non-Executive principal.
 
-- `ai_workspace_dataset_vietnamese_participants.xlsm`: canonical synthetic documents, metadata, departments, users, roles, permissions, and 50 public evaluation prompts.
-- `ai_workspace_mytasco_api_documentation.pdf` (version 2026-06-26): COP headers/envelope, staff and organization DTOs, compatibility requirements, and submission artifact requirements.
-- `TLD001` and `TLU001`: locally generated, clearly labelled isolation records used only to demonstrate a second subsidiary boundary; they are not challenge-provided examples.
+## Provenance
 
-The normalized TypeScript fixtures retain stable IDs, Vietnamese diacritics, full `content_vi`, owner/access metadata, dates, tags, language, and workbook word counts. During integration, a source-integrity check compared all 40 document contents, 32 identities, and 50 public evaluation rows against the supplied workbook.
+- `ai_workspace_dataset_vietnamese_participants.xlsm`: 40 exact Vietnamese documents, 32 canonical identities, eight Departments-sheet rows, and 50 Public_Evaluation rows.
+- `ai_workspace_mytasco_api_documentation.pdf`: COP headers/envelope, staff and organization entity shapes, request IDs, and integration conventions mirrored under `/mytasco/v1`.
+- Property-management context: 15 clearly labelled demo sources. Official context URLs point to Vietnam Ministry of Finance, Ministry of Construction, and Government legal portals.
+- `pnpm context:apify` runs the Apify Website Content Crawler against those official URLs. A real run ID must be supplied as `APIFY_RUN_ID` before the seed marks crawl provenance verified; absent credentials never become a fabricated success claim.

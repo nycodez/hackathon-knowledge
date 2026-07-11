@@ -1,4 +1,5 @@
 import {
+  deptId,
   type TascoDepartment,
   type TascoDocument,
   type TascoPermissionCase,
@@ -52,15 +53,18 @@ interface EvalRow {
   user_department: string | null
   question_vi: string | null
   difficulty: TascoPublicEvalRow['difficulty'] | null
+  canonical_role: TascoPublicEvalRow['canonicalRole'] | null
+  canonical_department: string | null
 }
 
 export default class WorkspaceRepository {
   private readonly users = new UsersRepository()
 
   public async load(): Promise<TascoSeedData> {
-    const [departments, users, documents, questions, subsidiaries, permissionCases, publicEvaluation] = await Promise.all([
+    const [departments, users, personas, documents, questions, subsidiaries, permissionCases, publicEvaluation] = await Promise.all([
       this.listDepartments(),
       this.users.list(),
+      this.users.listPersonas(),
       this.listDocuments(),
       this.listQuestions(),
       this.listSubsidiaries(),
@@ -70,10 +74,11 @@ export default class WorkspaceRepository {
     return {
       departments,
       users,
+      personas,
       documents,
       questions,
       subsidiaries,
-      personaIds: ['U004', 'U001', 'U002', 'U007'],
+      personaIds: ['PM-FIN-EMP', 'PM-FIN-EXEC'],
       permissionCases,
       publicEvaluation,
     }
@@ -168,10 +173,14 @@ export default class WorkspaceRepository {
   private async listPublicEvaluation(): Promise<TascoPublicEvalRow[]> {
     const result = await query<EvalRow>(
       `
-        SELECT id, user_id, document_ids, expected, answer_type,
-               category, user_role, user_department, question_vi, difficulty
-        FROM tasco_public_eval_rows
-        ORDER BY id
+        SELECT e.id, e.user_id, e.document_ids, e.expected, e.answer_type,
+               e.category, COALESCE(e.source_user_role, e.user_role) AS user_role,
+               COALESCE(e.source_user_department, e.user_department) AS user_department,
+               e.question_vi, e.difficulty, u.role AS canonical_role,
+               u.department_id AS canonical_department
+        FROM tasco_public_eval_rows e
+        JOIN tasco_users u ON u.tenant_id = e.tenant_id AND u.id = e.user_id
+        ORDER BY e.id
       `
     )
     return result.rows.map((row) => ({
@@ -183,6 +192,11 @@ export default class WorkspaceRepository {
       category: row.category ?? undefined,
       userRole: row.user_role ?? undefined,
       userDepartment: row.user_department ?? undefined,
+      canonicalRole: row.canonical_role ?? undefined,
+      canonicalDepartment: row.canonical_department ?? undefined,
+      identityMismatch: row.user_role !== row.canonical_role || (
+        row.user_department ? deptId(row.user_department) !== deptId(row.canonical_department ?? '') : false
+      ),
       questionVi: row.question_vi ?? undefined,
       difficulty: row.difficulty ?? undefined,
     }))

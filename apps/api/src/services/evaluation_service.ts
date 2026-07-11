@@ -19,7 +19,7 @@ export default class EvaluationService {
 
     for (const question of data.questions) {
       const document = findDocument(question.documentId, data)
-      const user = data.users.find((candidate) => canAccess(candidate, document) && candidate.subsidiaryId === document.subsidiaryId)
+      const user = [...data.users, ...data.personas].find((candidate) => canAccess(candidate, document) && candidate.subsidiaryId === document.subsidiaryId)
       if (!user) continue
       const started = performance.now()
       const result = await this.retrieval.searchAuthorized(user.id, question.questionEn, data, { language: 'en' })
@@ -29,7 +29,7 @@ export default class EvaluationService {
 
     let restrictedContextHits = 0
     for (const question of data.questions.filter((candidate) => findDocument(candidate.documentId, data).classification === 'Restricted')) {
-      const result = await this.retrieval.searchAuthorized('U001', question.questionEn, data, { language: 'en' })
+      const result = await this.retrieval.searchAuthorized('PM-FIN-EMP', question.questionEn, data, { language: 'en' })
       restrictedContextHits += result.results.filter((candidate) => candidate.document.classification === 'Restricted').length
     }
     const contextHashCheck = await query<{ hits: string }>(`
@@ -39,7 +39,7 @@ export default class EvaluationService {
       JOIN knowledge_chunks c ON c.content_hash = context_hash
       JOIN knowledge_sources s ON s.id = c.source_id
       WHERE e.tenant_id = 'tasco-demo'
-        AND e.actor_user_id = 'U001'
+        AND e.actor_user_id = 'PM-FIN-EMP'
         AND s.permission_class = 'Restricted'
     `)
     restrictedContextHits += Number(contextHashCheck.rows[0]?.hits ?? 0)

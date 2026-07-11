@@ -14,9 +14,9 @@ const classifications: TascoClassification[] = ['Public', 'Internal', 'Confident
     <section class="page page-home customization-page">
       <header class="page-header hero-header">
         <div>
-          <span class="eyebrow">Enterprise knowledge PoC</span>
-          <h1>Useful answers without crossing permission boundaries.</h1>
-          <p>Explore the supplied Vietnamese knowledge corpus with bilingual prompts and identity, subsidiary, department, role, and classification enforced before retrieval.</p>
+          <span class="eyebrow">My Tasco · Property Management Accounting</span>
+          <h1>The right accounting answer for the person asking.</h1>
+          <p>Real sponsor identities and evaluation data meet a focused property-management demo: fast grounded answers, department-aware depth, sticky memory, and provably invisible Restricted knowledge.</p>
         </div>
         <a class="button primary" routerLink="/secure-ask">Try Secure Ask <span aria-hidden="true">→</span></a>
       </header>
@@ -28,7 +28,7 @@ const classifications: TascoClassification[] = ['Public', 'Internal', 'Confident
       } @else {
         <div class="metric-grid">
           <article class="metric-card"><span>Knowledge sources</span><strong>{{ meta()?.counts?.documents ?? 0 }}</strong><small>{{ meta()?.counts?.chunks ?? 0 }} permission-scoped chunks</small></article>
-          <article class="metric-card"><span>Canonical identities</span><strong>{{ meta()?.counts?.users ?? 0 }}</strong><small>{{ meta()?.counts?.departments ?? 0 }} departments · {{ meta()?.counts?.subsidiaries ?? 0 }} subsidiaries</small></article>
+          <article class="metric-card"><span>Sponsor identities</span><strong>{{ meta()?.counts?.users ?? 0 }}</strong><small>Real Users sheet · never client-asserted roles</small></article>
           <article class="metric-card"><span>Permission gates</span><strong>{{ permissionScore() }}</strong><small>{{ permissionDetail() }}</small></article>
           <article class="metric-card"><span>Latest evaluation</span><strong>{{ evaluationScore() }}</strong><small>{{ evaluationDetail() }}</small></article>
         </div>
@@ -39,10 +39,10 @@ const classifications: TascoClassification[] = ['Public', 'Internal', 'Confident
               <div><span class="eyebrow">Permission boundary</span><h2>Same question, different authorization</h2></div>
               <span class="status-chip neutral">SQL pre-filter</span>
             </div>
-            <p>Ask about the 2026 company strategy and watch the server resolve two canonical identities before any source reaches answer construction.</p>
+            <p>Ask how the property portfolio is performing and compare the Accounting Employee view with the deeper Executive view—both grounded in only the sources each identity may retrieve.</p>
             <div class="outcome-pair">
-              <div><span class="status-chip denied">Employee</span><strong>Permission refusal</strong><small>No citation or Restricted context exposed</small></div>
-              <div><span class="status-chip allowed">Executive</span><strong>Grounded answer</strong><small>Authorized citation to DOC036</small></div>
+              <div><span class="status-chip neutral">Employee</span><strong>Accounting view</strong><small>Collections, controllable cost, and arrears</small></div>
+              <div><span class="status-chip allowed">Executive</span><strong>Deeper portfolio view</strong><small>Authorized Restricted context and citation</small></div>
             </div>
             <a class="button primary widget-action" routerLink="/secure-ask">Run the comparison</a>
           </article>
@@ -60,7 +60,7 @@ const classifications: TascoClassification[] = ['Public', 'Internal', 'Confident
                 </div>
               }
             </div>
-            <a class="text-link" routerLink="/access-rules">Inspect the policy matrix <span aria-hidden="true">→</span></a>
+            <a class="text-link" routerLink="/evaluation">Inspect the policy evidence <span aria-hidden="true">→</span></a>
           </article>
 
           <article class="scope-card runtime-widget">
@@ -80,8 +80,8 @@ const classifications: TascoClassification[] = ['Public', 'Internal', 'Confident
 
         <article class="scope-card table-card department-directory">
           <div class="section-heading">
-            <div><span class="eyebrow">Organization directory</span><h2>Departments and users</h2></div>
-            <span class="status-chip neutral">{{ departmentRoster().length }} departments · {{ meta()?.counts?.users ?? 0 }} users</span>
+            <div><span class="eyebrow">Demo identity matrix</span><h2>Property-management roles by department</h2></div>
+            <span class="status-chip neutral">{{ departmentRoster().length }} departments · {{ world()?.personas?.length ?? 0 }} personas</span>
           </div>
           <div class="table-scroll">
             <table class="policy-table department-table">
@@ -111,7 +111,7 @@ const classifications: TascoClassification[] = ['Public', 'Internal', 'Confident
 
         <div class="home-action-grid" aria-label="Enterprise knowledge tools">
           <a class="home-action-card" routerLink="/secure-ask"><span>◇</span><div><strong>Secure Ask</strong><small>Compare answers across canonical personas.</small></div><b>→</b></a>
-          <a class="home-action-card" routerLink="/access-rules"><span>⌾</span><div><strong>Access Rules</strong><small>Replay a live source-permission decision.</small></div><b>→</b></a>
+          <a class="home-action-card" routerLink="/secure-ask"><span>⌾</span><div><strong>Sticky Memory</strong><small>Switch identities and resume their own question history.</small></div><b>→</b></a>
           <a class="home-action-card" routerLink="/evaluation"><span>✓</span><div><strong>Evaluation</strong><small>Review permission, retrieval, and leak gates.</small></div><b>→</b></a>
         </div>
       }
@@ -132,7 +132,7 @@ export class HomePage implements OnInit {
     count: this.world()?.documents.filter((document) => document.classification === name).length ?? 0,
   })))
   protected readonly departmentRoster = computed(() => (this.world()?.departments ?? []).map((department) => {
-    const users = (this.world()?.users ?? []).filter((user) => deptId(user.department) === department.id)
+    const users = (this.world()?.personas ?? []).filter((user) => deptId(user.department) === department.id)
     return {
       ...department,
       users,

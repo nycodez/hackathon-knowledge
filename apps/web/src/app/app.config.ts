@@ -4,14 +4,14 @@ import { provideRouter, withComponentInputBinding, type Routes } from '@angular/
 
 const routes: Routes = [
   { path: '', title: 'Home · Knowledge Workspace', loadComponent: () => import('./pages/home.page').then((module) => module.HomePage) },
-  { path: 'query', title: 'Query · Knowledge Workspace', loadComponent: () => import('./pages/query.page').then((module) => module.QueryPage) },
-  { path: 'query/:conversationId', title: 'Conversation · Knowledge Workspace', loadComponent: () => import('./pages/query.page').then((module) => module.QueryPage) },
-  { path: 'results', title: 'Results · Knowledge Workspace', loadComponent: () => import('./pages/results.page').then((module) => module.ResultsPage) },
-  { path: 'library', title: 'Library · Knowledge Workspace', loadComponent: () => import('./pages/library.page').then((module) => module.LibraryPage) },
   { path: 'secure-ask', title: 'Secure Ask · Hackathon Knowledge', loadComponent: () => import('./pages/secure-ask.page').then((module) => module.SecureAskPage) },
-  { path: 'access-rules', title: 'Access Rules · Hackathon Knowledge', loadComponent: () => import('./pages/access-rules.page').then((module) => module.AccessRulesPage) },
   { path: 'evaluation', title: 'Evaluation · Hackathon Knowledge', loadComponent: () => import('./pages/evaluation.page').then((module) => module.EvaluationPage) },
-  { path: 'files', redirectTo: 'library', pathMatch: 'full' },
+  { path: 'query', redirectTo: 'secure-ask', pathMatch: 'full' },
+  { path: 'query/:conversationId', redirectTo: 'secure-ask' },
+  { path: 'results', redirectTo: 'secure-ask', pathMatch: 'full' },
+  { path: 'library', redirectTo: 'secure-ask', pathMatch: 'full' },
+  { path: 'access-rules', redirectTo: 'evaluation', pathMatch: 'full' },
+  { path: 'files', redirectTo: 'secure-ask', pathMatch: 'full' },
   { path: '**', redirectTo: '' },
 ]
 

@@ -11,6 +11,10 @@ interface UserRow {
   subsidiary_id: string
   email: string | null
   status: 'Active' | 'Inactive' | null
+  identity_type?: 'sponsor_user' | 'demo_persona'
+  display_department?: string | null
+  business_unit_id?: string | null
+  provenance?: string | null
 }
 
 function toUser(row: UserRow): TascoUser {
@@ -22,6 +26,11 @@ function toUser(row: UserRow): TascoUser {
     subsidiaryId: row.subsidiary_id,
     email: row.email ?? undefined,
     status: row.status ?? undefined,
+    identityType: row.identity_type,
+    displayDepartment: row.display_department ?? undefined,
+    businessUnitId: row.business_unit_id ?? undefined,
+    businessUnitName: row.business_unit_id === 'TASCO-PROPERTY-DEMO' ? 'Tasco Property Management' : undefined,
+    provenance: row.provenance ?? undefined,
   }
 }
 
@@ -30,7 +39,9 @@ export default class UsersRepository {
     const result = await query<UserRow>(
       `
         SELECT id, tenant_id, full_name, department_id, role, subsidiary_id,
-               metadata->>'email' AS email, metadata->>'status' AS status
+               metadata->>'email' AS email, metadata->>'status' AS status,
+               'sponsor_user' AS identity_type, NULL AS display_department,
+               NULL AS business_unit_id, metadata->>'source' AS provenance
         FROM tasco_users
         WHERE tenant_id = 'tasco-demo'
         ORDER BY id
@@ -39,12 +50,30 @@ export default class UsersRepository {
     return result.rows.map(toUser)
   }
 
-  public async findPrincipal(userId: string): Promise<Principal | null> {
+  public async listPersonas(): Promise<TascoUser[]> {
     const result = await query<UserRow>(
       `
         SELECT id, tenant_id, full_name, department_id, role, subsidiary_id,
-               metadata->>'email' AS email, metadata->>'status' AS status
-        FROM tasco_users
+               NULL AS email, metadata->>'status' AS status,
+               'demo_persona' AS identity_type, display_department,
+               business_unit_id, metadata->>'source' AS provenance
+        FROM tasco_demo_personas
+        WHERE tenant_id = 'tasco-demo'
+        ORDER BY department_id, role
+      `
+    )
+    return result.rows.map(toUser)
+  }
+
+  public async findPrincipal(userId: string): Promise<Principal | null> {
+    const result = await query<UserRow>(
+      `
+        SELECT id, tenant_id, full_name, department_id, role, subsidiary_id
+        FROM (
+          SELECT id, tenant_id, full_name, department_id, role, subsidiary_id FROM tasco_users
+          UNION ALL
+          SELECT id, tenant_id, full_name, department_id, role, subsidiary_id FROM tasco_demo_personas
+        ) identities
         WHERE tenant_id = 'tasco-demo' AND id = $1
         LIMIT 1
       `,

@@ -347,4 +347,53 @@ export const secureKnowledgeMigrations: Array<{ id: string; sql: string }> = [
         ON tasco_public_eval_rows (category, difficulty);
     `,
   },
+  {
+    id: '006_property_management_personas_and_identity_integrity',
+    sql: `
+      CREATE TABLE IF NOT EXISTS tasco_department_aliases (
+        tenant_id varchar(128) NOT NULL,
+        normalized_alias varchar(255) NOT NULL,
+        department_id varchar(32) NOT NULL,
+        source varchar(80) NOT NULL,
+        PRIMARY KEY (tenant_id, normalized_alias),
+        FOREIGN KEY (tenant_id, department_id)
+          REFERENCES tasco_departments (tenant_id, id) ON DELETE RESTRICT
+      );
+
+      CREATE TABLE IF NOT EXISTS tasco_demo_personas (
+        id varchar(32) PRIMARY KEY,
+        tenant_id varchar(128) NOT NULL,
+        full_name varchar(255) NOT NULL,
+        department_id varchar(32) NOT NULL,
+        display_department varchar(255) NOT NULL,
+        role varchar(32) NOT NULL CHECK (role IN ('Employee', 'Manager', 'Director', 'Executive')),
+        subsidiary_id varchar(128) NOT NULL,
+        business_unit_id varchar(128) NOT NULL,
+        metadata jsonb NOT NULL DEFAULT '{}',
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now(),
+        FOREIGN KEY (tenant_id, department_id)
+          REFERENCES tasco_departments (tenant_id, id) ON DELETE RESTRICT
+      );
+
+      CREATE UNIQUE INDEX IF NOT EXISTS tasco_demo_personas_matrix_idx
+        ON tasco_demo_personas (tenant_id, subsidiary_id, department_id, role);
+
+      ALTER TABLE tasco_threads DROP CONSTRAINT IF EXISTS tasco_threads_user_id_fkey;
+      ALTER TABLE tasco_threads
+        ADD COLUMN IF NOT EXISTS identity_type varchar(32) NOT NULL DEFAULT 'sponsor_user';
+
+      ALTER TABLE tasco_public_eval_rows
+        ADD COLUMN IF NOT EXISTS tenant_id varchar(128) NOT NULL DEFAULT 'tasco-demo',
+        ADD COLUMN IF NOT EXISTS source_user_role varchar(32),
+        ADD COLUMN IF NOT EXISTS source_user_department varchar(128);
+
+      UPDATE tasco_public_eval_rows
+      SET source_user_role = COALESCE(source_user_role, user_role),
+          source_user_department = COALESCE(source_user_department, user_department);
+
+      CREATE INDEX IF NOT EXISTS tasco_public_eval_identity_idx
+        ON tasco_public_eval_rows (tenant_id, user_id);
+    `,
+  },
 ]

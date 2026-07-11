@@ -46,10 +46,10 @@ const doc002 = await query<{ content: string; word_count: string }>(`
 `)
 const canonicalLeavePolicy = doc002.rows[0]
 const failures = [
-  Number(row?.chunks) !== 50 ? `expected 50 chunks, got ${row?.chunks}` : '',
-  Number(row?.documents) !== 41 ? `expected 41 sources, got ${row?.documents}` : '',
+  Number(row?.chunks) !== 190 ? `expected 190 chunks, got ${row?.chunks}` : '',
+  Number(row?.documents) !== 55 ? `expected 55 sources, got ${row?.documents}` : '',
   Number(row?.workbook_documents) !== 40 ? `expected 40 workbook-backed sources, got ${row?.workbook_documents}` : '',
-  Number(row?.bilingual_documents) !== 1 ? `expected only the synthetic isolation source to be bilingual, got ${row?.bilingual_documents}` : '',
+  Number(row?.bilingual_documents) !== 15 ? `expected 15 property-management demo sources to be bilingual, got ${row?.bilingual_documents}` : '',
   Number(row?.incomplete_triples) !== 0 ? `${row?.incomplete_triples} chunks have incomplete permission triples` : '',
   Number(row?.missing_headings) !== 0 ? `${row?.missing_headings} chunks have missing headings` : '',
   Number(row?.out_of_bounds) !== 0 ? `${row?.out_of_bounds} chunks are outside 275-500 tokens` : '',

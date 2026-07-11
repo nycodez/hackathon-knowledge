@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
-import type { TascoAskResponse, TascoThreadResponse } from '../../../../packages/shared/src/index.js'
-import { query } from '../db/pool.js'
+import type { TascoAskResponse, TascoThreadResponse, TascoThreadSummary } from '../../../../packages/shared/src/index.js'
+import { query, transaction } from '../db/pool.js'
 
 interface ThreadRow {
   id: string
@@ -26,30 +26,71 @@ export default class ThreadRepository {
     response: TascoAskResponse
   }): Promise<{ threadId: string; messageId: string }> {
     const threadId = input.threadId ?? randomUUID()
-    if (input.threadId) {
-      const existing = await query<{ id: string }>(
+    return transaction(async (client) => {
+      if (input.threadId) {
+        const existing = await client.query<{ id: string }>(
         'SELECT id FROM tasco_threads WHERE id = $1 AND tenant_id = $2 AND user_id = $3',
         [threadId, 'tasco-demo', input.userId]
       )
-      if (!existing.rows[0]) throw new Error('Unknown or unauthorized Tasco thread')
-    } else {
-      await query(
-        `INSERT INTO tasco_threads (id, tenant_id, user_id, language, title) VALUES ($1, $2, $3, $4, $5)`,
-        [threadId, 'tasco-demo', input.userId, input.language, input.question.slice(0, 255)]
-      )
-    }
+        if (!existing.rows[0]) throw new Error('Unknown or unauthorized Tasco thread')
+      } else {
+        await client.query(
+          `INSERT INTO tasco_threads (id, tenant_id, user_id, identity_type, language, title)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [threadId, 'tasco-demo', input.userId, input.userId.startsWith('PM-') ? 'demo_persona' : 'sponsor_user', input.language, input.question.slice(0, 255)]
+        )
+      }
 
-    await query(
+      await client.query(
       `INSERT INTO tasco_messages (id, thread_id, role, content) VALUES ($1, $2, 'user', $3)`,
       [randomUUID(), threadId, input.question]
-    )
-    const messageId = randomUUID()
-    await query(
+      )
+      const messageId = randomUUID()
+      await client.query(
       `INSERT INTO tasco_messages (id, thread_id, role, content, response) VALUES ($1, $2, $3, $4, $5)`,
       [messageId, threadId, input.response.state === 'answered' ? 'assistant' : 'refusal', input.response.answer, input.response]
+      )
+      await client.query('UPDATE tasco_threads SET updated_at = now(), language = $2 WHERE id = $1', [threadId, input.language])
+      return { threadId, messageId }
+    })
+  }
+
+  public async list(userId: string): Promise<TascoThreadSummary[]> {
+    const result = await query<{
+      id: string
+      user_id: string
+      language: 'en' | 'vi'
+      title: string
+      preview: string | null
+      message_count: string | number
+      updated_at: Date | string
+    }>(
+      `
+        SELECT t.id, t.user_id, t.language, t.title,
+               latest.content AS preview, count(m.id) AS message_count, t.updated_at
+        FROM tasco_threads t
+        LEFT JOIN tasco_messages m ON m.thread_id = t.id
+        LEFT JOIN LATERAL (
+          SELECT content FROM tasco_messages
+          WHERE thread_id = t.id AND role IN ('assistant', 'refusal')
+          ORDER BY created_at DESC, id DESC LIMIT 1
+        ) latest ON true
+        WHERE t.tenant_id = 'tasco-demo' AND t.user_id = $1
+        GROUP BY t.id, latest.content
+        ORDER BY t.updated_at DESC
+        LIMIT 20
+      `,
+      [userId]
     )
-    await query('UPDATE tasco_threads SET updated_at = now(), language = $2 WHERE id = $1', [threadId, input.language])
-    return { threadId, messageId }
+    return result.rows.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      language: row.language,
+      title: row.title,
+      preview: row.preview ?? '',
+      messageCount: Number(row.message_count),
+      updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
+    }))
   }
 
   public async find(threadId: string, userId: string): Promise<TascoThreadResponse | null> {

@@ -19,6 +19,7 @@
     "typecheck": "pnpm -r typecheck",
     "db:migrate": "pnpm --filter @hackathon/api migrate",
     "db:seed": "pnpm --filter @hackathon/api seed",
+    "context:apify": "pnpm --filter @hackathon/api crawl:apify",
     "verify:knowledge": "pnpm --filter @hackathon/api verify:chunks && pnpm --filter @hackathon/api verify:retrieval && pnpm --filter @hackathon/api verify:http"
   },
   "workspaces": [

@@ -45,6 +45,29 @@ export async function seedDatabase(options: SeedOptions = {}): Promise<void> {
 async function seedTascoDemoData(client: PoolClient): Promise<Record<string, number>> {
   const data = createTascoDemoData()
 
+  await client.query(
+    `DELETE FROM tasco_permission_cases WHERE NOT (id = ANY($1::varchar[]))`,
+    [data.permissionCases.map((testCase) => testCase.id)]
+  )
+  await client.query(
+    `DELETE FROM tasco_demo_personas WHERE tenant_id = $1 AND NOT (id = ANY($2::varchar[]))`,
+    [tenantId, data.personas.map((persona) => persona.id)]
+  )
+  await client.query(
+    `DELETE FROM tasco_users WHERE tenant_id = $1 AND NOT (id = ANY($2::varchar[]))`,
+    [tenantId, data.users.map((user) => user.id)]
+  )
+  await client.query(
+    `DELETE FROM tasco_questions WHERE NOT (document_id = ANY($1::varchar[]))`,
+    [data.documents.map((document) => document.id)]
+  )
+  await client.query(
+    `DELETE FROM knowledge_sources
+     WHERE tenant_id = $1 AND source_type = 'workspace_document'
+       AND NOT (source_record_id = ANY($2::varchar[]))`,
+    [tenantId, data.documents.map((document) => document.id)]
+  )
+
   for (const subsidiary of data.subsidiaries) {
     await client.query(
       `
@@ -82,6 +105,19 @@ async function seedTascoDemoData(client: PoolClient): Promise<Record<string, num
         },
       ]
     )
+
+    for (const alias of [department.id, department.en, department.vi]) {
+      await client.query(
+        `
+          INSERT INTO tasco_department_aliases (tenant_id, normalized_alias, department_id, source)
+          VALUES ($1, unaccent(lower(trim($2))), $3, 'Departments sheet canonical catalog')
+          ON CONFLICT (tenant_id, normalized_alias) DO UPDATE SET
+            department_id = EXCLUDED.department_id,
+            source = EXCLUDED.source
+        `,
+        [tenantId, alias, department.id]
+      )
+    }
   }
 
   for (const user of data.users) {
@@ -106,7 +142,7 @@ async function seedTascoDemoData(client: PoolClient): Promise<Record<string, num
         user.role,
         user.subsidiaryId,
         {
-          source: user.id === 'TLU001' ? 'synthetic subsidiary isolation persona' : 'Users sheet canonical identity',
+          source: 'Users sheet canonical identity',
           email: user.email ?? null,
           status: user.status ?? 'Active',
         },
@@ -114,10 +150,42 @@ async function seedTascoDemoData(client: PoolClient): Promise<Record<string, num
     )
   }
 
+  for (const persona of data.personas) {
+    await client.query(
+      `
+        INSERT INTO tasco_demo_personas (
+          id, tenant_id, full_name, department_id, display_department, role,
+          subsidiary_id, business_unit_id, metadata
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        ON CONFLICT (id) DO UPDATE SET
+          full_name = EXCLUDED.full_name,
+          department_id = EXCLUDED.department_id,
+          display_department = EXCLUDED.display_department,
+          role = EXCLUDED.role,
+          subsidiary_id = EXCLUDED.subsidiary_id,
+          business_unit_id = EXCLUDED.business_unit_id,
+          metadata = EXCLUDED.metadata,
+          updated_at = now()
+      `,
+      [
+        persona.id,
+        tenantId,
+        persona.name,
+        deptId(persona.department),
+        persona.displayDepartment ?? persona.department,
+        persona.role,
+        persona.subsidiaryId,
+        persona.businessUnitId ?? persona.subsidiaryId,
+        { source: persona.provenance, identityType: 'demo_persona', status: persona.status ?? 'Active' },
+      ]
+    )
+  }
+
   await seedQuestions(client, data.questions)
   await seedKnowledgeChunks(client, data.documents, data.questions)
 
-  await seedKnowledgeGraph(client, data.documents, data.users)
+  await seedKnowledgeGraph(client, data.documents, [...data.users, ...data.personas])
 
   for (const testCase of data.permissionCases) {
     await client.query(
@@ -141,9 +209,10 @@ async function seedTascoDemoData(client: PoolClient): Promise<Record<string, num
       `
         INSERT INTO tasco_public_eval_rows (
           id, user_id, document_ids, expected, answer_type,
-          category, user_role, user_department, question_vi, difficulty
+          category, user_role, user_department, source_user_role, source_user_department,
+          question_vi, difficulty, tenant_id
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $7, $8, $9, $10, $11)
         ON CONFLICT (id) DO UPDATE SET
           user_id = EXCLUDED.user_id,
           document_ids = EXCLUDED.document_ids,
@@ -152,6 +221,8 @@ async function seedTascoDemoData(client: PoolClient): Promise<Record<string, num
           category = EXCLUDED.category,
           user_role = EXCLUDED.user_role,
           user_department = EXCLUDED.user_department,
+          source_user_role = EXCLUDED.source_user_role,
+          source_user_department = EXCLUDED.source_user_department,
           question_vi = EXCLUDED.question_vi,
           difficulty = EXCLUDED.difficulty,
           updated_at = now()
@@ -167,6 +238,7 @@ async function seedTascoDemoData(client: PoolClient): Promise<Record<string, num
         row.userDepartment ?? null,
         row.questionVi ?? null,
         row.difficulty ?? null,
+        tenantId,
       ]
     )
   }
@@ -178,6 +250,7 @@ async function seedTascoDemoData(client: PoolClient): Promise<Record<string, num
       kgEdges: await countRows(client, 'kg_edges'),
       departments: await countRows(client, 'tasco_departments'),
       users: data.users.length,
+      personas: data.personas.length,
       subsidiaries: data.subsidiaries.length,
       permissionCases: data.permissionCases.length,
       publicEvalRows: data.publicEvaluation.length,
@@ -245,13 +318,21 @@ async function upsertKnowledgeSource(
         titleVi: document.titleVi,
         source: workbookDocument
           ? 'ai_workspace_dataset_vietnamese_participants.xlsm'
-          : 'synthetic subsidiary isolation extension',
+          : document.provenance ?? 'curated-demo',
         owner: workbookDocument?.owner ?? document.department,
         allowedAccess: workbookDocument?.allowedAccess ?? 'All Employees',
         lastUpdated: workbookDocument?.lastUpdated ?? null,
-        tags: workbookDocument?.tags ?? ['synthetic', 'subsidiary-isolation'],
+        tags: workbookDocument?.tags ?? ['property-management', 'accounting', document.provenance ?? 'curated-demo'],
         language: workbookDocument?.language ?? 'vi',
         workbookWordCount: workbookDocument?.wordCount ?? null,
+        ingestionProvider: workbookDocument ? 'sponsor-workbook' : document.ingestionProvider ?? 'curated',
+        sourceUrls: document.sourceUrls ?? [],
+        apifyRunVerified: document.ingestionProvider === 'apify-website-content-crawler'
+          ? Boolean(process.env.APIFY_RUN_ID)
+          : null,
+        apifyRunId: document.ingestionProvider === 'apify-website-content-crawler'
+          ? process.env.APIFY_RUN_ID ?? null
+          : null,
       },
     ]
   )
