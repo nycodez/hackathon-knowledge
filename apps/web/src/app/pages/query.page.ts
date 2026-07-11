@@ -30,10 +30,6 @@ import { MarkdownPipe } from '../core/markdown.pipe'
             <span class="chat-orb">✦</span>
             <h2>What would you like to learn?</h2>
             <p>Ask about any ready document in the corpus. Answers include the retrieved source passages.</p>
-            <div class="prompt-chips">
-              <button type="button" (click)="usePrompt('Summarize the most important information in the corpus.')">Summarize the corpus</button>
-              <button type="button" (click)="usePrompt('What decisions or next steps are described?')">Find next steps</button>
-            </div>
           </div>
         }
 
@@ -86,19 +82,20 @@ import { MarkdownPipe } from '../core/markdown.pipe'
           (pointercancel)="finishConsoleResize($event)"
           (keydown)="resizeConsoleWithKeyboard($event)"
         ><i></i></div>
-        <div class="console-events">
+        <div class="console-events" #consoleEvents>
           @if (!displayedTrace().length) {
-            <div class="console-empty"><span>›_</span></div>
+            <div class="console-empty"><span>$ _</span></div>
           } @else {
-            @for (event of displayedTrace(); track event.id; let index = $index) {
-              <article class="console-event" [attr.data-outcome]="event.outcome">
-                <div class="event-rail"><span>{{ index + 1 }}</span><i></i></div>
-                <div class="event-copy">
-                  <div><strong>{{ event.title }}</strong><time>{{ event.createdAt | date:'mediumTime' }}</time></div>
-                  <p>{{ event.detail }}</p>
+            @for (event of displayedTrace(); track event.id) {
+              <div class="console-line" [attr.data-level]="event.level">
+                <time>{{ event.createdAt | date:'mediumTime' }}</time>
+                <span class="console-level">{{ event.level }}</span>
+                <span class="console-message">
+                  <strong>{{ event.title }}</strong>
+                  <span>{{ event.detail }}</span>
                   <small>{{ event.stage }} · {{ event.outcome }}</small>
-                </div>
-              </article>
+                </span>
+              </div>
             }
           }
         </div>
@@ -109,6 +106,7 @@ import { MarkdownPipe } from '../core/markdown.pipe'
 })
 export class QueryPage implements OnInit {
   @ViewChild('chatSurface') private chatSurface?: ElementRef<HTMLElement>
+  @ViewChild('consoleEvents') private consoleEvents?: ElementRef<HTMLElement>
   private readonly api = inject(ApiService)
   private readonly route = inject(ActivatedRoute)
   private readonly router = inject(Router)
@@ -126,9 +124,10 @@ export class QueryPage implements OnInit {
   private resizeStartY = 0
   private resizeStartHeight = 0
   protected readonly displayedTrace = computed(() => {
-    if (this.pendingTrace().length) return this.pendingTrace()
+    let events = this.pendingTrace()
     const messages = this.conversation()?.messages ?? []
-    return [...messages].reverse().find((message) => message.role === 'assistant')?.decisionTrace ?? []
+    if (!events.length) events = [...messages].reverse().find((message) => message.role === 'assistant')?.decisionTrace ?? []
+    return events.map((event) => ({ ...event, level: consoleLevel(event.outcome) }))
   })
 
   ngOnInit(): void {
@@ -145,10 +144,6 @@ export class QueryPage implements OnInit {
       }
       this.loadConversation(id)
     })
-  }
-
-  protected usePrompt(prompt: string): void {
-    this.messageControl.setValue(prompt)
   }
 
   protected handleKeydown(event: KeyboardEvent): void {
@@ -206,6 +201,7 @@ export class QueryPage implements OnInit {
       pendingEvent('input', 'Query submitted', `Accepted ${content.length} characters for the active workspace.`, 'accepted'),
       pendingEvent('retrieval', 'Corpus retrieval running', 'Comparing the query with ready document chunks using hybrid search.', 'accepted'),
     ])
+    queueMicrotask(() => this.scrollConsoleToBottom())
     const existingId = this.conversation()?.id
     this.api.ask(content, existingId).pipe(
       takeUntilDestroyed(this.destroyRef),
@@ -216,11 +212,19 @@ export class QueryPage implements OnInit {
         this.pendingTrace.set([])
         this.messageControl.reset()
         if (!existingId) void this.router.navigate(['/query', result.conversation.id], { replaceUrl: true })
-        queueMicrotask(() => this.scrollToBottom())
+        queueMicrotask(() => {
+          this.scrollToBottom()
+          this.scrollConsoleToBottom()
+        })
       },
       error: (error: unknown) => {
-        this.pendingTrace.set([])
-        this.error.set(this.api.message(error))
+        const message = this.api.message(error)
+        this.pendingTrace.update((events) => [
+          ...events,
+          pendingEvent('response', 'Request failed', message, 'error'),
+        ])
+        this.error.set(message)
+        queueMicrotask(() => this.scrollConsoleToBottom())
       },
     })
   }
@@ -234,7 +238,10 @@ export class QueryPage implements OnInit {
     ).subscribe({
       next: (conversation) => {
         this.conversation.set(conversation)
-        queueMicrotask(() => this.scrollToBottom())
+        queueMicrotask(() => {
+          this.scrollToBottom()
+          this.scrollConsoleToBottom()
+        })
       },
       error: (error: unknown) => this.error.set(this.api.message(error)),
     })
@@ -245,6 +252,11 @@ export class QueryPage implements OnInit {
     if (element) element.scrollTop = element.scrollHeight
   }
 
+  private scrollConsoleToBottom(): void {
+    const element = this.consoleEvents?.nativeElement
+    if (element) element.scrollTop = element.scrollHeight
+  }
+
   private clampConsoleHeight(height: number): number {
     return Math.min(this.maximumConsoleHeight(), Math.max(this.minimumConsoleHeight, Math.round(height)))
   }
@@ -252,6 +264,12 @@ export class QueryPage implements OnInit {
   private consoleHeightLimit(): number {
     return Math.max(this.minimumConsoleHeight, Math.floor(window.innerHeight * 0.62))
   }
+}
+
+function consoleLevel(outcome: DecisionTraceEvent['outcome']): 'log' | 'warning' | 'error' {
+  if (outcome === 'error') return 'error'
+  if (outcome === 'guardrail' || outcome === 'no_match') return 'warning'
+  return 'log'
 }
 
 function pendingEvent(

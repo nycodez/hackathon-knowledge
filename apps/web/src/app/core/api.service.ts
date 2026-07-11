@@ -71,6 +71,10 @@ export class ApiService {
     return this.unwrap(this.http.post<ApiEnvelope<KnowledgeDocument>>(`/api/documents/${id}/process`, {}, { headers: this.headers }))
   }
 
+  deleteDocument(id: string): Observable<void> {
+    return this.http.delete<void>(`/api/documents/${id}`, { headers: this.headers })
+  }
+
   message(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
       const payload = error.error as ApiEnvelope<unknown> | undefined

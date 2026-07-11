@@ -38,7 +38,7 @@ export interface Citation {
 }
 
 export type DecisionTraceStage = 'input' | 'analysis' | 'embedding' | 'retrieval' | 'selection' | 'response'
-export type DecisionTraceOutcome = 'accepted' | 'completed' | 'no_match' | 'guardrail'
+export type DecisionTraceOutcome = 'accepted' | 'completed' | 'no_match' | 'guardrail' | 'error'
 
 export interface DecisionTraceEvent {
   id: string

@@ -74,6 +74,7 @@ const emptyListing: LibraryListing = {
                 <div><span class="status-pill" [attr.data-status]="document.status"><i></i>{{ document.status }}</span>@if (document.errorMessage) { <small class="file-error">{{ document.errorMessage }}</small> }</div>
                 <span>{{ document.sizeBytes / 1024 | number:'1.0-1' }} KB</span>
                 <span>{{ document.updatedAt | date:'short' }}</span>
+                <button class="file-delete" type="button" [disabled]="deletingId() === document.id" (click)="deleteDocument(document.id)" aria-label="Delete document">×</button>
               </article>
             }
           </div>
@@ -93,6 +94,7 @@ export class FilesPage implements OnInit {
   protected readonly currentFolderId = signal<string | null>(null)
   protected readonly loading = signal(true)
   protected readonly uploading = signal(false)
+  protected readonly deletingId = signal<string | null>(null)
   protected readonly creatingFolder = signal(false)
   protected readonly showFolderForm = signal(false)
   protected readonly folderDraft = signal('')
@@ -156,6 +158,22 @@ export class FilesPage implements OnInit {
       })
     ).subscribe({
       next: () => this.load(),
+      error: (error: unknown) => this.error.set(this.api.message(error)),
+    })
+  }
+
+  protected deleteDocument(id: string): void {
+    if (this.deletingId()) return
+    this.deletingId.set(id)
+    this.error.set('')
+    this.api.deleteDocument(id).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.deletingId.set(null))
+    ).subscribe({
+      next: () => this.listing.update((listing) => ({
+        ...listing,
+        documents: listing.documents.filter((document) => document.id !== id),
+      })),
       error: (error: unknown) => this.error.set(this.api.message(error)),
     })
   }
