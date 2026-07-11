@@ -2,7 +2,7 @@ import {
   PRIMARY_LOCALE,
   TRACK_CODE,
   TRACK_TITLE,
-} from '@hackathon/shared'
+} from '../../../../packages/shared/src/index.js'
 import { getOptionalEnv } from '../config/env.js'
 import { query } from '../db/pool.js'
 import type { DatasetCounts, HealthStatus, RuntimeMeta } from './secure_types.js'

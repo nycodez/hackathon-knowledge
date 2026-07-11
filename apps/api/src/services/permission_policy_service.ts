@@ -9,7 +9,7 @@ import {
   type TascoDocument,
   type TascoSeedData,
   type TascoUser,
-} from '@hackathon/shared'
+} from '../../../../packages/shared/src/index.js'
 
 export default class PermissionPolicyService {
   canAccess(user: TascoUser, document: TascoDocument): boolean {

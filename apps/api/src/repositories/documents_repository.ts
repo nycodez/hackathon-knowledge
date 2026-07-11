@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import type { KnowledgeDocument } from '@hackathon/shared'
+import type { KnowledgeDocument } from '../../../../packages/shared/src/index.js'
 import type { QueryResultRow } from 'pg'
 import { query, transaction } from '../db/pool.js'
 import { toVectorLiteral } from '../services/vector_service.js'

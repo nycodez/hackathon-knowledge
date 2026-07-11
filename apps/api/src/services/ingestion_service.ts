@@ -1,4 +1,4 @@
-import type { KnowledgeDocument } from '@hackathon/shared'
+import type { KnowledgeDocument } from '../../../../packages/shared/src/index.js'
 import { optionalEnv } from '../config/env.js'
 import DocumentsRepository, { type StoredDocument } from '../repositories/documents_repository.js'
 import { extractPdfText } from './pdf_text_service.js'

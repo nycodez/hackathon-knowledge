@@ -1,4 +1,4 @@
-import type { ChatMessage, Citation, Conversation, ConversationSummary, DecisionTraceEvent } from '@hackathon/shared'
+import type { ChatMessage, Citation, Conversation, ConversationSummary, DecisionTraceEvent } from '../../../../packages/shared/src/index.js'
 import type { QueryResultRow } from 'pg'
 import { query, transaction } from '../db/pool.js'
 

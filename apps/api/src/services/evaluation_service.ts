@@ -3,7 +3,7 @@ import {
   findDocument,
   type TascoEvalReport,
   type TascoSeedData,
-} from '@hackathon/shared'
+} from '../../../../packages/shared/src/index.js'
 import KnowledgeRetrievalService from './knowledge_retrieval_service.js'
 import PermissionPolicyService from './permission_policy_service.js'
 import { query } from '../db/pool.js'

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { createTascoDemoData } from '@hackathon/shared'
+import { createTascoDemoData } from '../../../../packages/shared/src/index.js'
 import { getOptionalEnv } from '../config/env.js'
 import { query } from './pool.js'
 

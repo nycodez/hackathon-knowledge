@@ -1,4 +1,4 @@
-import { deptId, type TascoUser } from '@hackathon/shared'
+import { deptId, type TascoUser } from '../../../../packages/shared/src/index.js'
 import { query } from '../db/pool.js'
 import type { Principal } from './secure_types.js'
 

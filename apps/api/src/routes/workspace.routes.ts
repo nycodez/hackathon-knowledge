@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from 'express'
 import { z } from 'zod'
-import type { TascoAuditEventType } from '@hackathon/shared'
+import type { TascoAuditEventType } from '../../../../packages/shared/src/index.js'
 import { getOptionalEnv } from '../config/env.js'
 import { resetSeed } from '../db/ensure_seed.js'
 import { query } from '../db/pool.js'
@@ -99,7 +99,7 @@ router.get(
   asyncRoute(async (req, res) => {
     const documents = await retrieval.listDocuments({
       subsidiaryId: req.query.subsidiary as string | undefined,
-      classification: req.query.classification as import('@hackathon/shared').TascoClassification | undefined,
+      classification: req.query.classification as import('../../../../packages/shared/src/index.js').TascoClassification | undefined,
       departmentId: req.query.department as string | undefined,
     }, res.locals.principal)
     res.json({ success: true, data: documents, meta: { count: documents.length, source: 'database' } })
@@ -152,7 +152,7 @@ router.get(
     res.json({
       success: true,
       data: await retrieval.searchAuthorized(res.locals.principal.userId, String(req.query.q ?? ''), data, {
-        classification: req.query.classification as import('@hackathon/shared').TascoClassification | undefined,
+        classification: req.query.classification as import('../../../../packages/shared/src/index.js').TascoClassification | undefined,
         departmentId: req.query.department as string | undefined,
         language: req.query.language as 'en' | 'vi' | undefined,
       }),

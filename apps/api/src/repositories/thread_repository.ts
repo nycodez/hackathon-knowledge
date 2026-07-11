@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import type { TascoAskResponse, TascoThreadResponse } from '@hackathon/shared'
+import type { TascoAskResponse, TascoThreadResponse } from '../../../../packages/shared/src/index.js'
 import { query } from '../db/pool.js'
 
 interface ThreadRow {

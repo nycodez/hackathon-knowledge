@@ -9,7 +9,7 @@ import type {
   TascoRetrievalTraceReplayResponse,
   TascoSearchResponse,
   TascoWorkspaceBootstrap,
-} from '@hackathon/shared'
+} from '../../../packages/shared/src/index.js'
 import app from '../src/app.js'
 import { getPool } from '../src/db/pool.js'
 

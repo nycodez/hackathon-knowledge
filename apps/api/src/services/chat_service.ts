@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import type { AskResult, Citation, DecisionTraceEvent } from '@hackathon/shared'
+import type { AskResult, Citation, DecisionTraceEvent } from '../../../../packages/shared/src/index.js'
 import ConversationsRepository from '../repositories/conversations_repository.js'
 import DocumentsRepository from '../repositories/documents_repository.js'
 import BedrockLlmService, { type QueryAnalysis } from './bedrock_llm_service.js'

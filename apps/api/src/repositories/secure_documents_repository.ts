@@ -3,7 +3,7 @@ import {
   type TascoClassification,
   type TascoDocumentChunk,
   type TascoDocument,
-} from '@hackathon/shared'
+} from '../../../../packages/shared/src/index.js'
 import { query } from '../db/pool.js'
 import type { AuthorizedDocumentRow, AuthorizedDocumentSearch, Principal } from './secure_types.js'
 

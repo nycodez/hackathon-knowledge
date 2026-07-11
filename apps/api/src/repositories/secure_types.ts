@@ -5,7 +5,7 @@ import type {
   TascoDocument,
   TascoRole,
   TascoUser,
-} from '@hackathon/shared'
+} from '../../../../packages/shared/src/index.js'
 
 export interface Principal {
   userId: string

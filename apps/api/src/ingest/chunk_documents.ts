@@ -1,4 +1,4 @@
-import { deptId, type TascoDocument, type TascoQuestion } from '@hackathon/shared'
+import { deptId, type TascoDocument, type TascoQuestion } from '../../../../packages/shared/src/index.js'
 
 export type ChunkLanguage = 'en' | 'vi'
 

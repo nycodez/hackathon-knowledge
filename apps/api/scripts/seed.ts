@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { pathToFileURL } from 'node:url'
 import type { PoolClient } from 'pg'
-import { createTascoDemoData, deptId, type TascoDocument, type TascoQuestion, type TascoUser } from '@hackathon/shared'
+import { createTascoDemoData, deptId, type TascoDocument, type TascoQuestion, type TascoUser } from '../../../packages/shared/src/index.js'
 import { getPool } from '../src/db/pool.js'
 import { chunkDocument, type KnowledgeChunkInput } from '../src/ingest/chunk_documents.js'
 import EmbeddingService from '../src/services/embedding_service.js'

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { query } from '../db/pool.js'
-import type { TascoEvalReport } from '@hackathon/shared'
+import type { TascoEvalReport } from '../../../../packages/shared/src/index.js'
 
 export interface EvalRunRecordInput {
   tenantId: string

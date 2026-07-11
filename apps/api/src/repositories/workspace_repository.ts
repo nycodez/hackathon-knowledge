@@ -7,7 +7,7 @@ import {
   type TascoQuestion,
   type TascoSeedData,
   type TascoSubsidiary,
-} from '@hackathon/shared'
+} from '../../../../packages/shared/src/index.js'
 import { query } from '../db/pool.js'
 import UsersRepository from './users_repository.js'
 

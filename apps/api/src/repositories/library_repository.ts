@@ -1,4 +1,4 @@
-import type { LibraryFolder, LibraryListing } from '@hackathon/shared'
+import type { LibraryFolder, LibraryListing } from '../../../../packages/shared/src/index.js'
 import type { QueryResultRow } from 'pg'
 import { query, transaction } from '../db/pool.js'
 import DocumentsRepository from './documents_repository.js'

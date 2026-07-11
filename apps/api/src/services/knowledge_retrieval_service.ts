@@ -15,7 +15,7 @@ import {
   type TascoSearchResponse,
   type TascoSeedData,
   type TascoUser,
-} from '@hackathon/shared'
+} from '../../../../packages/shared/src/index.js'
 import AuditRepository from '../repositories/audit_repository.js'
 import { getOptionalEnv } from '../config/env.js'
 import DocumentsRepository from '../repositories/secure_documents_repository.js'
