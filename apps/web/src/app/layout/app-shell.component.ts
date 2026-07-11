@@ -8,9 +8,9 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
   template: `
     <div class="app-shell">
       <aside class="sidebar">
-        <a class="brand" routerLink="/" aria-label="Knowledge Workspace home">
-          <span class="brand-mark">K</span>
-          <span class="brand-copy"><strong>Knowledge</strong><small>Workspace</small></span>
+        <a class="brand" routerLink="/" aria-label="Hackathon Knowledge home">
+          <span class="brand-mark">H</span>
+          <span class="brand-copy"><strong>Hackathon</strong><small>Knowledge</small></span>
         </a>
 
         <nav aria-label="Primary navigation">
@@ -25,6 +25,18 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
           </a>
           <a routerLink="/library" routerLinkActive="active">
             <span aria-hidden="true">▱</span> Library
+          </a>
+
+          <hr class="nav-divider" />
+
+          <a routerLink="/secure-ask" routerLinkActive="active">
+            <span aria-hidden="true">◇</span> Secure Ask
+          </a>
+          <a routerLink="/access-rules" routerLinkActive="active">
+            <span aria-hidden="true">⌾</span> Access Rules
+          </a>
+          <a routerLink="/evaluation" routerLinkActive="active">
+            <span aria-hidden="true">✓</span> Evaluation
           </a>
         </nav>
 

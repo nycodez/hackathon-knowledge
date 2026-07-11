@@ -8,6 +8,9 @@ const routes: Routes = [
   { path: 'query/:conversationId', title: 'Conversation · Knowledge Workspace', loadComponent: () => import('./pages/query.page').then((module) => module.QueryPage) },
   { path: 'results', title: 'Results · Knowledge Workspace', loadComponent: () => import('./pages/results.page').then((module) => module.ResultsPage) },
   { path: 'library', title: 'Library · Knowledge Workspace', loadComponent: () => import('./pages/library.page').then((module) => module.LibraryPage) },
+  { path: 'secure-ask', title: 'Secure Ask · Hackathon Knowledge', loadComponent: () => import('./pages/secure-ask.page').then((module) => module.SecureAskPage) },
+  { path: 'access-rules', title: 'Access Rules · Hackathon Knowledge', loadComponent: () => import('./pages/access-rules.page').then((module) => module.AccessRulesPage) },
+  { path: 'evaluation', title: 'Evaluation · Hackathon Knowledge', loadComponent: () => import('./pages/evaluation.page').then((module) => module.EvaluationPage) },
   { path: 'files', redirectTo: 'library', pathMatch: 'full' },
   { path: '**', redirectTo: '' },
 ]

@@ -39,7 +39,7 @@ router.get('/health', async (_req, res) => {
   try {
     await query('SELECT 1')
     res.json({ success: true, data: {
-      service: 'hackathon-framework',
+      service: 'hackathon-knowledge',
       status: 'ok',
       database: 'connected',
       vectorDimensions: VECTOR_DIMENSIONS,
@@ -47,7 +47,7 @@ router.get('/health', async (_req, res) => {
     } })
   } catch {
     res.status(503).json({ success: false, data: {
-      service: 'hackathon-framework',
+      service: 'hackathon-knowledge',
       status: 'degraded',
       database: 'unavailable',
       vectorDimensions: VECTOR_DIMENSIONS,

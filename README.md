@@ -1,6 +1,16 @@
-# Hackathon Framework
+# Hackathon Knowledge
 
-A clean Angular + Express starter for document-grounded hackathon products. It deploys as one Vercel project and uses PostgreSQL 17 with pgvector as the durable source of truth.
+A minimal enterprise-knowledge proof of concept built from the Hackathon Framework. It preserves the generic document workflow and introduces a clearly separated customization area for permission-aware retrieval, policy evidence, and evaluation.
+
+## Customization boundary
+
+The original Home, Query, Results, and Library navigation remains intact. An HR divider after Library marks where challenge-specific pages begin:
+
+- **Secure Ask** documents the same-question/different-permission demo and its server-owned identity contract.
+- **Access Rules** makes the deny-by-default classification and subsidiary policy explicit.
+- **Evaluation** records the required permission, context-isolation, and citation-integrity gates.
+
+These pages are the UI scaffold for the enterprise-knowledge PoC. The secure backend pre-filter and evaluation harness are the next implementation slice; the generic framework behavior remains available while they are added.
 
 ## Included
 
