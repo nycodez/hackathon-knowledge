@@ -69,7 +69,7 @@ export default class DocumentsRepository {
       `${documentSelect}
        WHERE d.workspace_id = $1 AND d.folder_id IS NOT DISTINCT FROM $2::uuid
        GROUP BY d.id
-       ORDER BY d.updated_at DESC`,
+       ORDER BY lower(d.name), d.name, d.created_at`,
       [workspaceId, folderId]
     )
     return result.rows.map(mapDocument)
